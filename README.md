@@ -3,5 +3,5 @@ MoazedLab
 
 Summer Internship with Moazed Lab at HMS
 
-* Implement centralized repository for the storage of laboratory data
-* File metadata stored in database
+* Implement Galaxy server for bioinformatics processing pipelines
+* Documentation and associated relevant literature regarding silent heterochromatin domains
