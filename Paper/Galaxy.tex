@@ -1,0 +1,18 @@
+\documentclass[a4paper,10pt]{article}
+\title{Implementation of Galaxy for the creation of re-usable bioinformatics processing pipelines}
+\author{Daniel J. Shea}
+\date{August 16th, 2014}
+
+\begin{document}
+\maketitle
+\pagebreak
+\section*{Introduction}
+Using yeast (Schizosaccharomyces Pombe and Saccharomyces Cervisiae) as our model organism, our research is conducted into understanding the biological processes underlying the formation, function, and epigenetic inheritance of silent chromatin domains.  Three major areas of research are related to RNAi-mediated assembly of heterochromatin, SIR-mediated assembly of silent chromatin, and the regulation of recombination within the ribosomal DNA repeats.  In order to improve the efficiency of data analysis via re-usable bioinformatics pipelines and to encourage collaboration and software re-use within the lab, we have chosen to implement a local instance of the Galaxy Project's open source web-based platform.
+\subsection*{Heterochromatin's role in the silencing of genes}
+The physical organization of DNA in eukaryotes plays a role in the levels of genetic expression by restricting the physical access of transcriptional machinery to various regions of an organism's genome.  The organization of DNA is structured around histones, octamers composed of highly conserved proteins, H2A, H2B, H3, and H4.  These proteins form heterodimers H2A/H2B and H3/H4, respectively, that then further form tetramers.  In turn, these tetramers then combine to form an octamer that is referred to as a histone.  DNA winds around these histones forming a nucleosome, with small segments of DNA, referred to as linker DNA, between them.  Structured around this basic organization of DNA are regions of tightly or loosely condensed chromatin, referred to as heterochromatin and euchromatin respectively.  Heterochromatin plays a functional role in gene silencing through the physical restriction of access to DNA by transcriptional machinery involved in transcribing DNA into messenger RNA (mRNA).
+\subsection*{Benefits derived from the implementation of Galaxy within the lab}
+Galaxy is an open, web-based platform for the analysis of data intensive biological research.  It provides an interactive and readily accessible web interface to many of the commonly used bioinformatics tools available today.  Computational pipelines may be constructed from within the web interface and then shared between users.  Workflows are accessible via the workflow editor, which allows for the visualization and editing of processing pipelines.  These workflows may then be abstracted for application to multiple data sets, and the workflows themselves can be shared between Galaxy users through the Galaxy web interface.  This allows researchers within our environment to compose analytical workflows that may then be re-used or re-purposed by other collaborators in the lab with minimal effort.
+\section*{Galaxy Architectural Overview}
+\section*{Application for re-usable bioinformatics processing pipelines}
+\section*{Conclusions}
+\end{document}
