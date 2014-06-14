@@ -1,4 +1,9 @@
 \documentclass[a4paper,10pt]{article}
+%%%
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\usepackage[colorlinks=true,urlcolor=blue]{hyperref}
+%%%
+
 \title{Implementation of a standalone Galaxy instance for the creation of re-usable bioinformatics processing pipelines}
 \author{Daniel J. Shea}
 \date{August 16th, 2014}
@@ -36,8 +41,77 @@ User authentication and role based authentication are handled by the Galaxy serv
 
 Below, we outline the necessary steps undertaken to install and configure our Galaxy standalone instance using the native python based web server and a postgresql back-end database for the storage of our data.
 \subsection{Galaxy and postgresql installation procedures}
+To install Galaxy we can retrieve the latest stable version from the mercurial repository.  In order to do this, we must have the mercurial package installed.  \textit{(\textbf{Note:} Since we are using Ubuntu server as our linux distribution, we will demonstrate how to do this using the Ubuntu package management tools.  Please refer to your operating system's package management documentation if you are using a different distribution of linux.)}
+\\\\
+\fcolorbox{gray}{Lavender}{
+\parbox{\linewidth}{
+\begin{itemize}
+\item[] \texttt{sudo apt-get install mercurial}
+\end{itemize}
+}}
+
+\vspace{1em}
+Once mercurial is installed we may then install the latest stable Galaxy from the mercurial repository.
+\\\\
+\fcolorbox{gray}{Lavender}{
+\parbox{\linewidth}{
+\begin{itemize}
+\item[] \texttt{hg clone https://bitbucket.org/galaxy/galaxy-dist/}
+\item[] \texttt{cd galaxy-dist}
+\item[] \texttt{hg update stable}
+\end{itemize}
+}}
+
+\vspace{1em}
+This is enough to configure a simple standalone Galaxy instance utilizing the internal sqlite database and python webserver.  You can test the installation by attempting to start Galaxy by running the following command from within the \texttt{galaxy-dist} directory.
+\\\\
+\fcolorbox{gray}{Lavender}{
+\parbox{\linewidth}{
+\begin{itemize}
+\item[] \texttt{sh run.sh}
+\end{itemize}
+}}
+
+\vspace{1em}
+The initial run of Galaxy will pull necessary python .egg files and start a local instance of the Galaxy server.  We can now shut down the test instance as we will next install postgresql and configure Galaxy to rely on the external database as our back-end data store for all of our research data.  Shutdown of Galaxy may be performed by issuing a \texttt{Ctrl-c} in the terminal where \texttt{sh run.sh} was instantiated.
+
+To configure postgresql we will need to install the postgresql package.
+\\\\
+\fcolorbox{gray}{Lavender}{
+\parbox{\linewidth}{
+\begin{itemize}
+\item[] \texttt{sudo apt-get install postgresql}
+\end{itemize}
+}}
+
+\vspace{1em}
+Further details regarding the configuration of postgresql may be obtained in your operating system's system administration documentation, or by accessing postgresql documentation available \href{http://www.postgresql.org/}{online}.  Once the database software is installed, we must create a database owned by the user id that will run the Galaxy server.  In our case the user id is \texttt{galaxy}.  \textit{(\textbf{Note:} The name of the database user created in postgresql should match whatever username is chosen.)}  Since the Galaxy platform controls its own schema within the database, we need to ensure that our galaxy user has the appropriate permissions and ownership of the the database for table creation.  This is controlled through the postgresql configuration and instructions on how to assign roles and permissions to a postgresql user may be referenced in the postgresql documentation.
+
 \subsection{Galaxy standalone instance configuration}
+Once a database has been created and we have created both the relevant galaxy user in the operating system and in the database authentication systems, we can begin to configure Galaxy for use with an external database.
+Galaxy stores its relevant configuration information in a file located at the top-level directory \texttt{galaxy-dist} within a file named \texttt{universe\_wsgi.ini}.
+
+First we should ensure that the Galaxy server will be accessible from external interfaces if we are planning on setting up a web accessible standalone instance.  This can be done by making the following change to the host entry within \texttt{universe\_wsgi.ini}:
+\\\\
+\fcolorbox{gray}{Lavender}{
+\begin{minipage}{\textwidth}
+\texttt{\# The address on which to listen.  By default, only listen to}\\
+\texttt{\# localhost (Galaxy will not be accessible over the network).}\\
+\texttt{\# Use '0.0.0.0' to listen on all available network interfaces.}\\
+\texttt{\# host = 127.0.0.1}\\
+\texttt{host = 0.0.0.0}
+\end{minipage}
+}
+
+\section{Setting up a Data Library in Galaxy}
+Galaxy allows for the configuration of data libraries in order to share data files.  The benefit of a data library is that access control may be permissioned on a user or group basis, if necessary.  Furthermore, data stored in a data library is only stored once within the database.  When users import data from a data library, a pointer to the original data is passed.  This reduces disk utilization on the server and circumvents duplication of large data sets shared among multiple users.
+
+We have implemented a Data Library within Galaxy as a centralized repository for all of our laboratory's publicly published data.  This enables new researcher's to quickly make use of relevant available data, along with maintaining NCBI GEO and SRA accession identifiers should further relevant data not originating from the lab be required.  This data is then readily applicable and already in the proper data formats applicable to existing bioinformatics workflows published within our Galaxy instance.
+\subsection{Example Data Library creation}
 \section{Galaxy workflow creation}
+Workflows are created either by extracting a workflow from an existing analysis, or by building a workflow within the workflow editor.  Workflows allow for the creation of a generalized pipeline for the processing of biological data using the many tools installed in the Galaxy tool shed.  This approach utilizes a graphical flowchart detailing the inputs and outputs derived from each tool.  Individual tool's outputs may be connected to the inputs of subsequent tools, forming a data pipeline.  These workflows may then be saved and shared with other users of the Galaxy platform.
+
+Workflows are modeled after data flow diagrams found in software engineering, whereby an input data set is transformed through a series of applied functions, resulting in output derived from the series of transformations applied to the data in the model.  This allows for an abstract representation of the analysis to be performed on a type of data input which which result in data output of a specific format.  Further complex analysis can then be derived by chaining relatively simple workflows to construct larger, more complex analytical pipelines.  Presented below is an example, illustrating the workflow creation process, utilizing the workflow editor.
 \subsection{Example workflow}
 \section{Conclusions}
 \end{document}
