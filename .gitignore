@@ -1,5 +1,6 @@
 .~lock*
 *.aux
 *.log
+*.out
 *.synctex.gz
 *.synctex
