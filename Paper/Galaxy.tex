@@ -3,8 +3,8 @@
 \usepackage{listings} % For code blocks
 \usepackage[usenames,dvipsnames,svgnames,table]{xcolor} % For colorized boxes and text
 \usepackage[colorlinks=true,urlcolor=blue]{hyperref} % To make HTML links blue
-\usepackage{courier}
-\usepackage[a4paper]{geometry}
+\usepackage{courier} % for Courier font
+\usepackage[a4paper]{geometry} % for a4paper margins
 % Setup listings package for shell script and have comments presented in blue
 % Text will be in Lavendar boxes with black border in Courier monospaced font
 \lstset{ %
@@ -12,7 +12,7 @@
   basicstyle=\footnotesize\ttfamily,        % the size of the fonts that are used for the code
   breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
   breaklines=true,                 % sets automatic line breaking
-  captionpos=b,                    % sets the caption-position to bottom
+  captionpos=t,                    % sets the caption-position to bottom
   commentstyle=\color{DarkBlue},    % comment style
   %deletekeywords={...},            % if you want to delete keywords from the given language
   %escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
@@ -32,7 +32,7 @@
   stepnumber=5,                    % the step between two line-numbers. If it's 1, each line will be numbered
   %stringstyle=\color{mymauve},     % string literal style
   tabsize=4,                       % sets default tabsize to 2 spaces
-  title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+  %title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
 }
 %%%
 
@@ -291,6 +291,11 @@ On linux based systems, it might be beneficial to utilize \texttt{\footnotesize{
 \end{lstlisting}
 
 This tells the logrotate d$\ae$mon to rotate paster.log weekly, keeping the last 8 logs, copying the existing file and truncating the current log, and then compressing the copied logfile to reduce disk utilization storing the files.  It is ok if the file is missing, and do not perform the above actions if the current log file is empty.  For more information on how to configure the logrotate d$\ae$mon itself, please refer to your operating system administration documentation.
+
+\subsection{Automating start up and shut down of the Galaxy service}
+Since Galaxy will be treated as a system service on our server, we have opted to create a simple start up and shut down script on our Ubuntu server utilizing the Ubuntu upstart system.  this ensures that when our system is brought down for maintenance, or re-started, that our Galaxy instance will be brought down cleanly during the shut down process and brought back up during the system's boot sequence.  Below are the contents of our script for reference.
+
+\lstinputlisting{galaxy.txt}
 
 \section{Setting up a Data Library in Galaxy}
 Galaxy allows for the configuration of data libraries in order to share data files.  The benefit of a data library is that access control may be permissioned on a user or group basis, if necessary.  Furthermore, data stored in a data library is only stored once within the database.  When users import data from a data library, a pointer to the original data is passed.  This reduces disk utilization on the server and circumvents duplication of large data sets shared among multiple users.
