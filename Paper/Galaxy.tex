@@ -5,6 +5,7 @@
 \usepackage[colorlinks=true,urlcolor=blue]{hyperref} % To make HTML links blue
 \usepackage{courier} % for Courier font
 \usepackage[a4paper]{geometry} % for a4paper margins
+\usepackage{graphicx} % for the inclusion of screenshots
 % Setup listings package for shell script and have comments presented in blue
 % Text will be in Lavendar boxes with black border in Courier monospaced font
 \lstset{ %
@@ -296,6 +297,20 @@ This tells the logrotate d$\ae$mon to rotate paster.log weekly, keeping the last
 Since Galaxy will be treated as a system service on our server, we have opted to create a simple start up and shut down script on our Ubuntu server utilizing the Ubuntu upstart system.  this ensures that when our system is brought down for maintenance, or re-started, that our Galaxy instance will be brought down cleanly during the shut down process and brought back up during the system's boot sequence.  Below are the contents of our script for reference.
 
 \lstinputlisting{galaxy.txt}
+
+\section{Account creation and initial login}
+Once Galaxy has been successfully installed, we can create our user.  This section briefly covers the GUI interface, as most of the functionality is self documented and rather quite self-explanatory.
+At this point the Galaxy instance should be running according to the previously outlined configuration and accessible via a web browser.
+By default, Galaxy makes use of port \texttt{\footnotesize{8080}}. Therefore, in our case, to access Galaxy we simply direct our browser to the following URL \href{http://chromosome.med.harvard.edu:8080}{http://chromosome.med.harvard.edu:8080}
+
+From here, you will want to create the administrative account that matches the email address you specified in your configuration in the \texttt{\footnotesize{admin\_users}} section of \texttt{\footnotesize{universe\_wsgi.ini}}.\vspace{1em}
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/00_login}}\vspace{1em}
+
+From here you be greeted with a registration page that will allow you to create your account.\vspace{1em}
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/01_account_creation}}\vspace{1em}
+
+Once you have successfully logged in, you will be greeted with the standard Galaxy page.  Please note that you should have an \texttt{\footnotesize{Admin}} menu visible for your user.  (You may need to restart your Galaxy instance for this to take effect.)\vspace{1em}\\
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/02_main_page}}\vspace{1em}
 
 \section{Setting up a Data Library in Galaxy}
 Galaxy allows for the configuration of data libraries in order to share data files.  The benefit of a data library is that access control may be permissioned on a user or group basis, if necessary.  Furthermore, data stored in a data library is only stored once within the database.  When users import data from a data library, a pointer to the original data is passed.  This reduces disk utilization on the server and circumvents duplication of large data sets shared among multiple users.
