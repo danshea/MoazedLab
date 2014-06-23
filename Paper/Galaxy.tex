@@ -9,6 +9,7 @@
 \usepackage{courier} % for Courier font
 \usepackage[a4paper]{geometry} % for a4paper margins
 \usepackage{graphicx} % for the inclusion of screenshots
+\usepackage{dirtree} % for directory listings
 % Setup listings package for shell script and have comments presented in blue
 % Text will be in Lavendar boxes with black border in Courier monospaced font
 \lstset{ %
@@ -52,9 +53,9 @@ Using yeast (Schizosaccharomyces Pombe and Saccharomyces Cervisiae) as our model
 \subsection{Heterochromatin's role in the silencing of genes}
 The physical organization of DNA in eukaryotes plays a role in the levels of genetic expression by restricting the physical access of transcriptional machinery to various regions of an organism's genome.  The organization of DNA is structured around histones, octamers composed of highly conserved proteins, H2A, H2B, H3, and H4.  These proteins form heterodimers H2A/H2B and H3/H4, respectively, that then further form tetramers.  In turn, these tetramers then combine to form an octamer that is referred to as a histone.  DNA winds around these histones forming a nucleosome, with small segments of DNA, referred to as linker DNA, between them.  Structured around this basic organization of DNA are regions of tightly or loosely condensed chromatin, referred to as heterochromatin and euchromatin respectively.  Heterochromatin plays a functional role in gene silencing through the physical restriction of access to DNA by transcriptional machinery involved in transcribing DNA into messenger RNA (mRNA).
 \subsection{Benefits derived from the implementation of Galaxy within the lab}
-Galaxy is an open, web-based platform for the analysis of data intensive biological research.  It provides an interactive and readily accessible web interface to many of the commonly used bioinformatics tools available today.  Computational pipelines may be constructed from within the web interface and then shared between users.  Workflows are accessible via the workflow editor, which allows for the visualization and editing of processing pipelines.  These workflows may then be abstracted for application to multiple data sets, and the workflows themselves can be shared between Galaxy users through the Galaxy web interface.  This allows researchers within our environment to compose analytical workflows that may then be re-used or re-purposed by other collaborators in the lab with minimal effort.
+Galaxy is an open, web-based platform for the analysis of data intensive biological research.  It provides an interactive and readily accessible web interface to many of the commonly used bioinformatics tools available today.  Computational pipelines may be constructed from within the web interface and then shared between users.  Work flows are accessible via the work flow editor, which allows for the visualization and editing of processing pipelines.  These work flows may then be abstracted for application to multiple data sets, and the work flows themselves can be shared between Galaxy users through the Galaxy web interface.  This allows researchers within our environment to compose work flows that may then be re-used or re-purposed by other collaborators in the lab with minimal effort.
 \section{Computational server architectural overview}
-Our computational server, chromosome.med.harvard.edu, serves as the platform on which we run our Galaxy instance.  It should be noted however, that a local galaxy instance can be run on hardware with relatively modest specifications.  Depending upon the data sets and types of analyses performed, you may be constrained by the available amount RAM on your server when dealing with particularly large data sets or application of computationally intensive analysis such as attempting to perform de novo assembly.  The table below details the hardware configuration for chromosome.
+Our computational server, \texttt{\footnotesize{chromosome.med.harvard.edu}}, serves as the platform upon which we run our Galaxy instance.  It should be noted however, that a local galaxy instance can be run on hardware with relatively modest specifications.  Depending upon the data sets and types of analyses performed, you may be constrained by the available amount RAM on your server when dealing with particularly large data sets or application of computationally intensive analysis such as attempting to perform de novo assembly.  The table below details the hardware configuration for chromosome.
 \subsection{Hardware configuration}
 \renewcommand{\arraystretch}{1.5}
 \begin{tabular}{|r|p{.8\linewidth}|}
@@ -71,13 +72,13 @@ Our computational server, chromosome.med.harvard.edu, serves as the platform on 
 \hline
 \end{tabular}
 \section{Galaxy architectural overview}
-Galaxy provides default web server and local database storage for standalone instances.  Depending on the use case, it is advised to reconfigure the instance to make use of more robust data storage and/or web server solutions.  For our particular instance, we are currently utilizing a postgresql database as our back-end storage.  Given the relatively small number of users within our lab utilization of nginx or apache as a web server, however, should the internal webserver prove to pose a bottleneck at a later date, the existing configuration may be migrated to nginx to take advantage of caching functionality to serve the static portions of the Galaxy web site.  By default, sqlite internal database files are utilized for the storage of data and computational workflows.  This proved promblematic as our anticipated data sets were determined to quickly tax a small flat file database system such as sqlite.  Therefore, we opted to create a postgresql database wherein to store all of our data.  Details on how to accomplish this are detailed below in the database subsection.
+Galaxy provides default web server and local database storage for standalone instances.  Depending on the use case, it is advised to reconfigure the instance to make use of more robust data storage and/or web server solutions.  For our particular instance, we are currently utilizing a postgresql database as our back-end storage.  Given the relatively small number of users within our lab, utilization of nginx or apache as a web server.  However, should the internal webserver prove to pose a bottleneck at a later date, the existing configuration may be migrated to nginx to take advantage of caching functionality in order to serve the static portions of the Galaxy web site.  By default, sqlite internal database files are utilized for the storage of data and computational work flows.  This proved promblematic as our anticipated data sets were determined to quickly tax a small flat file database system such as sqlite.  Therefore, we opted to create a postgresql database wherein to store all of our data.  Details on how to accomplish this are detailed below in the database subsection.
 
 User authentication and role based authentication are handled by the Galaxy server itself.  Larger installations with access to a centralized user identification management system such as LDAP or kerberos may be able to take advantage of identity caching through configuration of login caching and forwarding via apache or nginx.  Attempts to tie our local instance to existing LDAP authentication mechanisms proved to break the existing administrative functionality of the server.  These issues were raised with the development team of the Galaxy Project and it is currently being assessed as a possible feature request by Galaxy development team.
 
 Below, we outline the necessary steps undertaken to install and configure our Galaxy standalone instance using the native python based web server and a postgresql back-end database for the storage of our data.
 \subsection{Galaxy and postgresql installation procedures}
-To install Galaxy we can retrieve the latest stable version from the mercurial repository.  In order to do this, we must have the mercurial package installed.  \textit{(\textbf{Note:} Since we are using Ubuntu server as our linux distribution, we will demonstrate how to do this using the Ubuntu package management tools.  Please refer to your operating system's package management documentation if you are using a different distribution of linux.)}
+To install Galaxy, we can retrieve the latest stable version from the mercurial repository.  In order to do this, we must have the mercurial package installed.  \textit{(\textbf{Note:} Since we are using Ubuntu server as our linux distribution, we will demonstrate how to do this using the Ubuntu package management tools.  Please refer to your operating system's package management documentation if you are using a different distribution of linux.)}
 
 \begin{lstlisting}
 sudo apt-get install mercurial
@@ -105,7 +106,7 @@ To configure postgresql we will need to install the postgresql package.
 sudo apt-get install postgresql
 \end{lstlisting}
 
-Further details regarding the configuration of postgresql may be obtained in your operating system's system administration documentation, or by accessing postgresql documentation available \href{http://www.postgresql.org/}{online}.  Once the database software is installed, we must create a database owned by the user id that will run the Galaxy server.  In our case the user id is \texttt{\footnotesize{galaxy}}.  \textit{(\textbf{Note:} The name of the database user created in postgresql should match whatever username is chosen.)}  Since the Galaxy platform controls its own schema within the database, we need to ensure that our galaxy user has the appropriate permissions and ownership of the the database for table creation.  This is controlled through the postgresql configuration and instructions on how to assign roles and permissions to a postgresql user may be referenced in the postgresql documentation.
+Further details regarding the configuration of postgresql may be obtained in your operating system's system administration documentation, or by accessing postgresql documentation available \href{http://www.postgresql.org/}{online}.  Once the database software is installed, we must create a database owned by the user id that will run the Galaxy server.  In our case the user id is \texttt{\footnotesize{galaxy}}.  \textit{(\textbf{Note:} The name of the database user created in postgresql should match whatever username is chosen.)}  Since the Galaxy platform controls its own schema within the database, we need to ensure that our galaxy user has the appropriate permissions and ownership of the the database for table creation.  This is controlled through the postgresql configuration.  Instructions on how to assign roles and permissions to a postgresql user may be referenced in the postgresql documentation.
 
 \subsection{Galaxy standalone instance configuration}
 Once a database has been created and we have created both the relevant galaxy user in the operating system and in the database authentication systems, we can begin to configure Galaxy for use with an external database.
@@ -164,7 +165,7 @@ tool_path = tools
 tool_dependency_dir = tool_dependencies
 \end{lstlisting}
 
-Now we will need to configure Galaxy to take advantage of Data Libraries, a method for sharing data within the lab.  Directories in the configuration file listed here are relative paths, meaning, they are assumed to exist underneath our local galaxy-dist directory.  It should be noted that if you define a directory within the configuration file, you must still create the directory yourself and ensure it has appropriate permissions for access by Galaxy.  in our case the owner of the Galaxy processes is the \texttt{\footnotesize{galaxy}} user, so we created the relevant directories and ensured that the ownership was set appropriately.
+Next, we will need to configure Galaxy to take advantage of Data Libraries, a method for sharing data within the lab.  Directories in the configuration file listed here are relative paths, meaning, they are assumed to exist underneath our local \texttt{\footnotesize{galaxy-dist}} directory.  It should be noted that if you define a directory within the configuration file, you must still create the directory yourself and ensure it has appropriate permissions for access by Galaxy.  in our case the owner of the Galaxy processes is the \texttt{\footnotesize{galaxy}} user, so we created the relevant directories and ensured that the ownership was set appropriately.
 
 Below is the entry in the configuration file telling Galaxy where files will be placed in order for the Galaxy administrator to upload them into Galaxy.
 
@@ -186,7 +187,7 @@ root@chromosome:/usr/local/galaxy-dist# ls -ld MoazedLabData/
 drwxr-xr-x 4 galaxy galaxy 89 Jun 12 14:22 MoazedLabData/
 \end{lstlisting}
 
-Next we will enable the functionality that allows us to paste system specific paths via the Data Library management tool.  Since our galaxy user is restricted to the Galaxy installation itself, this does not pose a security risk.  However, it is strongly advised that you carefully consider the implications of enabling this feature if you choose to run galaxy with a normal account.  It is advised that you create a galaxy account for running galaxy and restrict the galaxy user to only allow access to relevant system files.  Please refer to your operating system's system administration documentation if you are unsure how to do this, as it is outside the scope of this article.
+We will now enable the functionality that allows us to paste system specific paths via the Data Library management tool.  Since our galaxy user is restricted to the Galaxy installation itself, this does not pose a security risk.  However, it is strongly advised that you carefully consider the implications of enabling this feature if you choose to run galaxy with a normal account.  It is advised that you create a galaxy account for running galaxy and restrict the galaxy user to only allow access to relevant system files.  Please refer to your operating system's system administration documentation if you are unsure how to do this, as it is outside the scope of this article.
 
 \begin{lstlisting}
 # Add an option to the admin library upload tool allowing admins to paste
@@ -245,7 +246,7 @@ The next setting we may need to change is to normalize emails.  Galaxy user ids 
 normalize_remote_user_email = True
 \end{lstlisting}
 
-It is important if you are planning on administrating your galaxy instance to add your own email address to this entry and to create a user with a matching email address.  This will enable you to access the administrative functions later when bringing up the Galay instance and is important to be able to create the shared Data Libraries.
+It is important if you are planning on administrating your galaxy instance to add your own email address to this entry and to create a user with a matching email address.  This will enable you to access the administrative functions later when bringing up the Galaxy instance and is important to be able to create the shared Data Libraries.
 \begin{lstlisting}
 # Administrative users - set this to a comma-separated list of valid Galaxy
 # users (email addresses).  These users will have access to the Admin section
@@ -281,7 +282,7 @@ Once you have finished configuration of your Galaxy instance you can again bring
 \subsection{Galaxy log file rotation using logrotate}
 Located under the galaxy installation (in our case \texttt{\footnotesize{/usr/local/galaxy-dist}})  we will find a log file named \texttt{\footnotesize{paster.log}}.  This file is where the Galaxy instance will log messages while it is running on the system.
 
-On linux based systems, it might be beneficial to utilize \texttt{\footnotesize{logrotate}} to handle ensuring that \texttt{\footnotesize{paster.log}} is routinely rotated and compressed, to avoid continuously logging to a single file that will over time grow and consume system resources such as disk space.  This can be done by implementing a logrotate configuration for galaxy by placing a file named \texttt{\footnotesize{galaxy}} in \texttt{\footnotesize{/etc/logrotate.d}} with the following configuration.
+On linux based systems, it might be beneficial to utilize \texttt{\footnotesize{logrotate}} to handle ensuring that \texttt{\footnotesize{paster.log}} is routinely rotated and compressed, to avoid continuously logging to a single file that will, over time, grow and consume system resources such as disk space.  This can be done by implementing a logrotate configuration for galaxy by placing a file named \texttt{\footnotesize{galaxy}} in \texttt{\footnotesize{/etc/logrotate.d}} with the following configuration.
 
 \begin{lstlisting}
 /usr/local/galaxy-dist/paster.log {
@@ -302,7 +303,7 @@ Since Galaxy will be treated as a system service on our server, we have opted to
 \lstinputlisting{galaxy.txt}
 
 \section{Account creation and initial login}
-Once Galaxy has been successfully installed, we can create our user.  This section briefly covers the GUI interface, as most of the functionality is self documented and rather quite self-explanatory.
+Once Galaxy has been successfully installed, we can create our user.  This section briefly covers the GUI interface, as most of the functionality is documented in the Galaxy user documentation.
 At this point the Galaxy instance should be running according to the previously outlined configuration and accessible via a web browser.
 By default, Galaxy makes use of port \texttt{\footnotesize{8080}}. Therefore, in our case, to access Galaxy we simply direct our browser to the following URL \href{http://chromosome.med.harvard.edu:8080}{http://chromosome.med.harvard.edu:8080}
 
@@ -317,13 +318,27 @@ Once you have successfully logged in, you will be greeted with the standard Gala
 
 \section{Setting up a Data Library in Galaxy}
 Galaxy allows for the configuration of data libraries in order to share data files.  The benefit of a data library is that access control may be permissioned on a user or group basis, if necessary.  Furthermore, data stored in a data library is only stored once within the database.  When users import data from a data library, a pointer to the original data is passed.  This reduces disk utilization on the server and circumvents duplication of large data sets shared among multiple users.
+We chose to implement a Data Library for the shared publication data that has been generated by researcher's within our lab.  The benefits of this are several-fold.  We have a central repository within the laboratory for all of our sequencing data.  New lab members can easily examine work that has been done to date and thereby reduce the time required for them to acclimate themselves to the work flow within the lab.  Researcher's unfamiliar or just starting out utilizing bioinformatics tools are presented with a relatively intuitive GUI interface that can assist them in performing analyses on our lab's server.  The centralized repository of sequence data maintains annotation of the relevant NCBI GEO and SRA accession identifiers.  In order to import the SRA data in the proper file formats applicable to Galaxy, the \texttt{\footnotesize{sra-toolkit}} was used to convert SRA formatted data to SAM file format and then uploaded to Galaxy via the Data Library management interface.
+The directory hierarchy for SRA data is as follows:\vspace{1em}
+\dirtree{%
+.1 MoazedLabData.
+.2 Processed.
+.2 SRAs.
+.3 SRP\dots.
+.3 \dots.
+}\vspace{1em}
+\texttt{\footnotesize{MoazedLabData}} resides under the base \texttt{\footnotesize{galaxy-dist}}.  SRAs are downloaded from NCBI and then processed via \texttt{\footnotesize{sra-toolkit}} for conversion to a bzip2-compressed SAM format (\texttt{\footnotesize{SRRnnnnn.sam.bz2}}).
+In order to automate the conversion of SRA data to SAM format, some helper scripts were written in \texttt{\footnotesize{bash}} and are included below.
+\lstinputlisting[title=process.sh]{Scripts/process.sh}
+\lstinputlisting[title=sra2sam.sh]{Scripts/sra2sam.sh}
 
-We have implemented a Data Library within Galaxy as a centralized repository for all of our laboratory's publicly published data.  This enables new researcher's to quickly make use of relevant available data, along with maintaining NCBI GEO and SRA accession identifiers should further relevant data not originating from the lab be required.  This data is then readily accessible, and already in the proper data formats applicable, to existing bioinformatics workflows published within our Galaxy instance.
-\subsection{Example Data Library creation}
-\section{Galaxy workflow creation}
-Workflows are created either by extracting a workflow from an existing analysis, or by building a workflow within the workflow editor.  Workflows allow for the creation of a generalized pipeline for the processing of biological data using the many tools installed in the Galaxy tool shed.  This approach utilizes a graphical flowchart detailing the inputs and outputs derived from each tool.  Individual tool's outputs may be connected to the inputs of subsequent tools, forming a data pipeline.  These workflows may then be saved and shared with other users of the Galaxy platform.
+Once files are downloaded from NCBI, \texttt{\footnotesize{process.sh}} is called from within the directory containing the \texttt{\footnotesize{sra}} data files, this script passes each file to \texttt{\footnotesize{sra2sam.sh}} which calls \texttt{\footnotesize{sam-dump}} (part of the sra-toolkit) to output a compressed SAM file to the \texttt{\footnotesize{Processed}} directory.
 
-Workflows are modeled after data flow diagrams found in software engineering, whereby an input data set is transformed through a series of applied functions, resulting in output derived from the series of transformations applied to the data in the model.  This allows for an abstract representation of the analysis to be performed on a type of data input which which result in data output of a specific format.  Further complex analysis can then be derived by chaining relatively simple workflows to construct larger, more complex analytical pipelines.  Presented below is an example, illustrating the workflow creation process, utilizing the workflow editor.
-\subsection{Example workflow}
+These files are then uploaded into Galaxy via the Data Library Management interface within the Admin menu of Galaxy.  Once the data has been uploaded into Galaxy, is it now stored within our postgresql database.
+\section{Galaxy work flow creation}
+Work flows are created either by extracting a work flow from an existing analysis, or by building a work flow within the work flow editor.  Work flows allow for the creation of a generalized pipeline for the processing of biological data using the many tools installed in the Galaxy tool shed.  This approach utilizes a graphical flowchart detailing the inputs and outputs derived from each tool.  Individual tool's outputs may be connected to the inputs of subsequent tools, forming a data pipeline.  These work flows may then be saved and shared with other users of the Galaxy platform.
+
+Work flows are modeled after data flow diagrams found in software engineering, whereby an input data set is transformed through a series of applied functions, resulting in output derived from the series of transformations applied to the data in the model.  This allows for an abstract representation of the analysis to be performed on a type of data input which will result in data output of a specific format.  Further complex analysis can then be derived by chaining relatively simple work flows to construct larger, more complex pipelines.  Presented below is an example, illustrating the work flow creation process, utilizing the work flow editor.
+\subsection{Example work flow}
 \section{Conclusions}
 \end{document}

@@ -1,0 +1,98 @@
+/usr/local/galaxy-dist/MoazedLabData
+├── chown_galaxy.sh
+├── Processed
+│   ├── GSE52534_PombeGenome_1491A.fasta.gz
+│   ├── GSE52534_PombeGenome_1491C.fasta.gz
+│   ├── SRR006811.sam.bz2
+│   ├── SRR006812.sam.bz2
+│   ├── SRR035947.sam.bz2
+│   ├── SRR035948.sam.bz2
+│   ├── SRR035949.sam.bz2
+│   ├── SRR035950.sam.bz2
+│   ├── SRR035951.sam.bz2
+│   ├── SRR035952.sam.bz2
+│   ├── SRR035953.sam.bz2
+│   ├── SRR035954.sam.bz2
+│   ├── SRR035955.sam.bz2
+│   ├── SRR035956.sam.bz2
+│   ├── SRR035957.sam.bz2
+│   ├── SRR035958.sam.bz2
+│   ├── SRR035959.sam.bz2
+│   ├── SRR1030698.sam.bz2
+│   ├── SRR1030699.sam.bz2
+│   ├── SRR1030700.sam.bz2
+│   ├── SRR1030701.sam.bz2
+│   ├── SRR1030702.sam.bz2
+│   ├── SRR1030703.sam.bz2
+│   ├── SRR1030704.sam.bz2
+│   ├── SRR1030705.sam.bz2
+│   ├── SRR1030706.sam.bz2
+│   ├── SRR1030707.sam.bz2
+│   ├── SRR1030708.sam.bz2
+│   ├── SRR1030709.sam.bz2
+│   ├── SRR1030710.sam.bz2
+│   ├── SRR1030711.sam.bz2
+│   ├── SRR1030712.sam.bz2
+│   ├── SRR1032898.sam.bz2
+│   ├── SRR1032899.sam.bz2
+│   ├── SRR1032901.sam.bz2
+│   ├── SRR1032902.sam.bz2
+│   ├── SRR1032903.sam.bz2
+│   ├── SRR1032904.sam.bz2
+│   ├── SRR1032905.sam.bz2
+│   ├── SRR1032906.sam.bz2
+│   ├── SRR1032907.sam.bz2
+│   ├── SRR1032908.sam.bz2
+│   └── SRR1032909.sam.bz2
+├── process.sh
+├── sra2sam.sh
+└── SRAs
+    ├── SRP000417
+    │   ├── SRR006811.sra
+    │   └── SRR006812.sra
+    ├── SRP001978
+    │   ├── SRR035947.sra
+    │   ├── SRR035948.sra
+    │   ├── SRR035949.sra
+    │   ├── SRR035950.sra
+    │   ├── SRR035951.sra
+    │   ├── SRR035952.sra
+    │   ├── SRR035953.sra
+    │   ├── SRR035954.sra
+    │   ├── SRR035955.sra
+    │   ├── SRR035956.sra
+    │   ├── SRR035957.sra
+    │   ├── SRR035958.sra
+    │   └── SRR035959.sra
+    ├── SRP033087
+    │   ├── SRR1030698.sra
+    │   ├── SRR1030699.sra
+    │   ├── SRR1030700.sra
+    │   ├── SRR1030701.sra
+    │   ├── SRR1030702.sra
+    │   ├── SRR1030703.sra
+    │   ├── SRR1030704.sra
+    │   ├── SRR1030705.sra
+    │   ├── SRR1030706.sra
+    │   ├── SRR1030707.sra
+    │   ├── SRR1030708.sra
+    │   ├── SRR1030709.sra
+    │   ├── SRR1030710.sra
+    │   ├── SRR1030711.sra
+    │   └── SRR1030712.sra
+    ├── SRP033132
+    │   ├── SRR1032898.sra
+    │   └── SRR1032899.sra
+    ├── SRP033133
+    │   ├── SRR1032901.sra
+    │   └── SRR1032902.sra
+    └── SRP033134
+        ├── SRR1032903.sra
+        ├── SRR1032904.sra
+        ├── SRR1032905.sra
+        ├── SRR1032906.sra
+        ├── SRR1032907.sra
+        ├── SRR1032908.sra
+        └── SRR1032909.sra
+
+8 directories, 87 files
