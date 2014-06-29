@@ -295,12 +295,99 @@ allow_user_deletion = True
 \subsection{Integration of nginx for use as a proxy with Galaxy}
 Nginx is a webserver software package that can be utilized as a proxy to serve static html and to provide improved server response in comparison to the built-in python webserver that Galaxy deploys natively.  Here, we will detail the necessary configuration steps that were required to enable Galaxy to work with nginx as a proxy.
 
-The configuration file for the nginx webserver are located in \texttt{\footnotesize{/etc/nginx/nginx.conf}} 
+The configuration file for the nginx webserver are located in \texttt{\footnotesize{/etc/nginx/nginx.conf}}.  This file will require the following changes in order for nginx to serve as a proxy for Galaxy.
+Within the \texttt{\footnotesize{http}} clause, the following settings will allow nginx to utilize gzip compression to reduce the amount of data that needs to be passed through the proxy.  It is advisable to add this to the configuration if it is not already present as it significantly speeds up performance of the webserver when dealing with large data sets.
+
+\begin{lstlisting}
+        ##
+        # Gzip Settings
+        ##
+
+        gzip on;
+        gzip_disable "msie6";
+
+        gzip_vary on;
+        gzip_proxied any;
+        gzip_comp_level 6;
+        gzip_buffers 16 8k;
+        gzip_http_version 1.1;
+        gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+\end{lstlisting}
+
+These filters must also be enabled in the Galaxy configuration file \texttt{\footnotesize{universe\_wsgi.ini}} as well, as they are disabled by default.  Here, the proxy filters are defined near the top of the configuration file and we have enabled them.
+
+\begin{lstlisting}
+# ---- Filters --------------------------------------------------------------
+
+# Filters sit between Galaxy and the HTTP server.
+
+# These filters are disabled by default.  They can be enabled with
+# 'filter-with' in the [app:main] section below.
+
+# Define the gzip filter.
+[filter:gzip]
+use = egg:Paste#gzip
+
+# Define the proxy-prefix filter.
+[filter:proxy-prefix]
+use = egg:PasteDeploy#prefix
+prefix = /
+\end{lstlisting}
+
+Next, we comment out the entry for the default built-in webserver and enable filtering with a proxy.
+
+\begin{lstlisting}
+# If not running behind a proxy server, you may want to enable gzip compression
+# to decrease the size of data transferred over the network.  If using a proxy
+# server, please enable gzip compression there instead.
+#filter-with = gzip
+
+# If running behind a proxy server and Galaxy is served from a subdirectory,
+# enable the proxy-prefix filter and set the prefix in the
+# [filter:proxy-prefix] section above.
+filter-with = proxy-prefix
+\end{lstlisting}
+
+Back within the \texttt{\footnotesize{/etc/nginx/nginx.conf}} file, we will now define the Galaxy application and direct the proxy to the location of static files to be served.
+Since we are only running Galaxy on this server's web server, our configuration is rather minimal.  We serve pages on port 8080 (the default Galaxy port) and point the aliases to the appropriate directories underneath the Galaxy base installation directory \texttt{\footnotesize{/usr/local/galaxy-dist}}.
+
+\begin{lstlisting}
+        ##
+        # Galaxy configuration
+        ##
+        upstream galaxy_app {
+        server localhost:8080;
+        }
+        server {
+                client_max_body_size 10G;
+                # ... other server stuff ...
+                location / {
+                proxy_set_header X-Forwarded-Host $host;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-URL-SCHEME https;
+                }
+                location /static {
+                alias /usr/local/galaxy-dist/static;
+                }
+                location /static/style {
+                alias /usr/local/galaxy-dist/static/june_2007_style/blue;
+                }
+                location /static/scripts {
+                alias /usr/local/galaxy-dist/static/scripts/packed;
+                }
+                location /favicon.ico {
+                alias /usr/local/galaxy-dist/static/favicon.ico;
+                }
+                location /robots.txt {
+                alias /usr/local/galaxy-dist/static/robots.txt;
+                }
+        }
+\end{lstlisting}
 
 Once you have finished configuration of your Galaxy instance you can again bring it up and test that the configuration settings are working as intended.  You can verify that the Galaxy server is able to access your postgresql database and a new schema should appear within the database now that Galaxy is managing its internal storage via the postgresql database.  There is an important log associated with startup that should be mentioned at this point, as it will assist in troubleshooting any potential configuration issues and will allow you to determine when Galaxy has successfully started.
 
 \section{Galaxy system service configuration}
-Since Galaxy is running as a system service, we will make several additional operating system level modifications to our server.  The following subsections briefly outline such configuraton changes with respect to Ubuntu 12.04LTS.
+Since Galaxy is running as a system service, we will make several additional operating system level modifications to our server.  The following subsections briefly outline such configuraton changes with respect to Ubuntu 12.04LTS.  Postgresql and nginx should already be enabled as system services that start at boot time as part of their installation via the package manager, therefore we will only cover the necessary steps required to ensure that Galaxy is also enabled and brought up as a system service.
 
 \subsection{Galaxy log file rotation using logrotate}
 Located under the galaxy installation (in our case \texttt{\footnotesize{/usr/local/galaxy-dist}})  we will find a log file named \texttt{\footnotesize{paster.log}}.  This file is where the Galaxy instance will log messages while it is running on the system.
@@ -325,8 +412,10 @@ Since Galaxy will be treated as a system service on our server, we have opted to
 
 \lstinputlisting{galaxy.txt}
 
+The LSB header information contained in this script is specific to our Ubuntu system's startup scripts.  It allows the \texttt{\footnotesize{update-rc.d}} script to configure the startup and shutdown of Galaxy for the appropriate runlevels during system initialization and shut down.
+
 \section{Account creation and initial login}
-Once Galaxy has been successfully installed, we can create our user.  This section briefly covers the GUI interface, as most of the functionality is documented in the Galaxy user documentation.
+Once Galaxy has been successfully installed and brought online, we can then create our user.  This section briefly covers the GUI interface, as most of the functionality is documented in the Galaxy user documentation.
 At this point the Galaxy instance should be running according to the previously outlined configuration and accessible via a web browser.
 By default, Galaxy makes use of port \texttt{\footnotesize{8080}}. Therefore, in our case, to access Galaxy we simply direct our browser to the following URL \href{http://chromosome.med.harvard.edu:8080}{http://chromosome.med.harvard.edu:8080}
 
@@ -360,9 +449,9 @@ Once files are downloaded from NCBI, \texttt{\footnotesize{process.sh}} is calle
 These files are then uploaded into Galaxy via the Data Library Management interface within the Admin menu of Galaxy.  Once the data has been uploaded into Galaxy, is it now stored within our postgresql database.
 
 \section{Bioinformatics tools and integration with the Galaxy tool shed}
-There are numerous bioinformatics software tools available for use on Linux-based computing platforms.  Galaxy leverages these by providing python wrappers that will present form based entry for the various parameters associated with each tool.  Fortunately, the majority of these software packages already have pre-defined wrappers that can be leveraged through the Galaxy tool shed.  Administration of the tool shed allows us as the administrator to install these tools in Galaxy and make them available to users.  It should be noted however, that the software tools themselves must also be installed and available on the Galaxy user's \texttt{\footnotesize{\$PATH}} in order to be executed by Galaxy.  Each software package will have its own requirements regarding acceptable version number and individual configuration.  For alignment and NGS mapping tools like \texttt{\footnotesize{bwa}}, \texttt{\footnotesize{tophat}}, \texttt{\footnotesize{tophat2}}, and \texttt{\footnotesize{BLAST}} local indexes and libraries can be maintained on the local installation server where Galaxy is installed.  A good reference regarding how to configure local indexes is available in the Galaxy documentation regarding \href{https://wiki.galaxyproject.org/Admin/DataPreparation}{data preparation}.
+There are numerous bioinformatics software tools available for use on Linux-based computing platforms.  Galaxy leverages these by providing python wrappers that will present form based entry for the various parameters associated with each tool.  Fortunately, the majority of these software packages already have pre-defined wrappers that can be accessed through the Galaxy tool shed.  Administration of the tool shed allows us as the administrator to install these tools in Galaxy and make them available to users.  It should be noted however, that the software tools themselves must also be installed and available on the Galaxy user's \texttt{\footnotesize{\$PATH}} in order to be executed by Galaxy.  Each software package will have its own requirements regarding acceptable version number and individual configuration.  For alignment and NGS mapping tools like \texttt{\footnotesize{bwa}}, \texttt{\footnotesize{tophat}}, \texttt{\footnotesize{tophat2}}, and \texttt{\footnotesize{BLAST}}, the local indexes and libraries can be maintained on the local installation server where Galaxy is installed.  A good reference regarding how to configure local indexes is available in the Galaxy documentation regarding \href{https://wiki.galaxyproject.org/Admin/DataPreparation}{data preparation}.
 
-For the purposes of our laboratory environment and research regarding our model ogranism, \textit{Schizosaccaromyces pombe}, there is no available UCSC database entry regarding our model organism.  As such, a reference genome in \texttt{\footnotesize{fasta}} format was installed into a shared Data Library for use in our computational work flows.  
+For the purposes of our laboratory environment and research regarding our model ogranism, \textit{Schizosaccaromyces pombe}, there is no available UCSC database entry regarding our model organism.  Therefore, support for adding our model organism's reference genome into these built in indexes is not available.  As such, a reference genome in \texttt{\footnotesize{fasta}} format was installed into a shared Data Library for use in our computational work flows.  
 
 \section{Galaxy work flow creation}
 Work flows are created either by extracting a work flow from an existing analysis, or by building a work flow within the work flow editor.  Work flows allow for the creation of a generalized pipeline for the processing of biological data using the many tools installed in the Galaxy tool shed.  This approach utilizes a graphical flowchart detailing the inputs and outputs derived from each tool.  Individual tool's outputs may be connected to the inputs of subsequent tools, forming a data pipeline.  These work flows may then be saved and shared with other users of the Galaxy platform.
@@ -370,6 +459,31 @@ Work flows are created either by extracting a work flow from an existing analysi
 Work flows are modeled after data flow diagrams found in software engineering, whereby an input data set is transformed through a series of applied functions, resulting in output derived from the series of transformations applied to the data in the model.  This allows for an abstract representation of the analysis to be performed on a type of data input which will result in data output of a specific format.  Further complex analysis can then be derived by chaining relatively simple work flows to construct larger, more complex pipelines.  Presented below is an example, illustrating the work flow creation process, utilizing the work flow editor.
 
 \subsection{Example work flow}
+As an example workflow, we have chosen to utilize the experimental data found in the Nature protocol ``Differential gene expression analysis of RNA-seq experiments with TopHat and Cufflinks''.  For details on where to obtain the sample data for this protocol, please reference the original paper.  In this analysis RNA-seq data from \textit{Drosophila melanogaster} will be mapped to the reference genome using tophat.  The expressed genes and transcripts will then be assembled utilizing cufflinks and cuffmerge will then merge the assemblies into a single transcript annotation.  This data may then be analyzed through the use of CummeRbund to plot differentially expressed genes.
+
+Sample data for the protocol was downloaded to the server running our Galaxy instance.  This data was then uploaded into our Galaxy instance through the Data Library management interface.  
+
+\subsection{A note about tophat}
+In order to run the tophat portion of the protocol, we had to apply a manual patch to fix option passing to tophat2.  The details of this patch are outlined \href{https://groups.google.com/forum/#!topic/tuxedo-tools-users/vG5Rn0IgxoA}{here}.  It is possible that this patch has already been incorporated into a newer release of the tophat software, however as of the time of this writing, we were running the most recent release of tophat.
+\begin{lstlisting}
+root@chromosome:~# tophat --version
+TopHat v2.0.11
+\end{lstlisting}
+
+While the procedure for performing a differential gene analysis follows closely the protocol outlined in the Nature paper, there are some additional steps that must be considered when performing the analysis within the Galaxy environment.  The first thing to take note of is that our fastq data will need to be run through the fastqsanger groomer to convert the quality scores.  Once this is done, we then may run \texttt{\footnotesize{tophat2}} to align the RNA-seq reads to the \textit{Drosophila melanogaster} reference genome.  We must also import files that we wish to use into our current history, so that they may be passed as arguments within the tool dialogs.  Therefore it is important to import both the annotation file \texttt{\footnotesize{genes.gtf}} and \texttt{\footnotesize{genome.fa}} into the history, along with the RNA-seq fastq data files to be aligned.
+
+Once the files have been imported from our Data Library, we first run the \texttt{\footnotesize{fastqsanger groomer}} on each of the RNA-seq files.  We then select the \texttt{\footnotesize{tophat2}} tool and select the appropriate options to perform our alignment.
+
+Below is a series of reference screenshot detailing the options selected for running tophat2 against the first set of paired-end reads in our RNA-seq data set.\\
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/09_tophat2}}\vspace{1em}
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/10_tophat2}}\vspace{1em}
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/11_tophat2}}\vspace{1em}
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/12_tophat2}}\vspace{1em}
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/13_tophat2}}\vspace{1em}
+Once the run has completed, the history sidebar will be updated.  provided the run was successful and contained no errors during execution, you should see something similar to this in your history.\vspace{1em}\\
+\setlength\fboxsep{0pt}\fbox{\includegraphics[scale=0.5]{Screenshots/14_tophat2_output}}\vspace{1em}\\
+Clicking on the eye icon of the \texttt{\footnotesize{align summary}} will display a summary of the alignment in the main window.\vspace{1em}\\
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/15_tophat2_results}}\vspace{1em}
 
 \section{Conclusions}
 \end{document}
