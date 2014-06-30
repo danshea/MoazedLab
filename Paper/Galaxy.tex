@@ -522,7 +522,8 @@ Once \texttt{\footnotesize{cuffmerge}} has completed its execution, we now shoul
 \setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/21_cuffmerge_results}}\vspace{1em}
 
 \subsection{Identify differentially expressed genes and transcripts using cuffdiff}
-With the finished assembly of our transcriptome, we may utilize \texttt{\footnotesize{cuffdiff}} to identify the differentially expressed genes and transcripts from our RNA-seq data. \vspace{1em}\\
+With the finished assembly of our transcriptome, we may utilize \texttt{\footnotesize{cuffdiff}} to identify the differentially expressed genes and transcripts from our RNA-seq data.  The \texttt{\footnotesize{cuffdiff}} tool may be utilized if you wish to perform plot generation and analysis outside of Galaxy using R.\vspace{1em}\\
+\textbf{Differential expression using \texttt{\footnotesize{cuffdiff}}}\vspace{1em}\\
 \setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/22_cuffdiff}}\vspace{1em}
 Here, we specify the bam files of our accepted hits from our 2 conditions, each consisting of 3 replicates.\vspace{1em}\\
 \textbf{Condition 1 with 3 replicates}\\
@@ -533,7 +534,8 @@ Here, we specify the bam files of our accepted hits from our 2 conditions, each 
 \setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/25_cuffdiff_options}}\vspace{1em}
 
 \subsection{Analysis of differential expression with cummeRbund}
-CummeRbund is an R library that can be accessed either through the R interpreter directly, or by utilizing the \texttt{\footnotesize{cummerbund}} Galaxy tool from the main tool shed.  Here we will explore the distribution of expression levels and plot the two conditions utilizing a scatterplot.  We will also create a volcano plot to visualize the differentially expressed genes from the data we have obtained from our \texttt{\footnotesize{cuffdiff}} analysis.
+CummeRbund is an R library that can be accessed through the R interpreter.  Here we will explore the distribution of expression levels and plot the two conditions utilizing a scatterplot.  We will also create a volcano plot to visualize the differentially expressed genes from the data we have obtained from our \texttt{\footnotesize{cuffdiff}} analysis.\vspace{1em}\\
+
 
 \section{Acknowledgments}
 I would like to express my gratitude to Dr. Danesh Moazed, Investigator, Howard Hughes Medical Institute and Professor of Cell Biology, Harvard Medical School, for providing me the opportunity to participate in a research internship this summer.  It has been a very educational and exciting experience.  My time with the lab has provided me with a wealth of hands-on experience and knowledge.
