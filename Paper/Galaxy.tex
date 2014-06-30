@@ -458,20 +458,27 @@ Work flows are created either by extracting a work flow from an existing analysi
 
 Work flows are modeled after data flow diagrams found in software engineering, whereby an input data set is transformed through a series of applied functions, resulting in output derived from the series of transformations applied to the data in the model.  This allows for an abstract representation of the analysis to be performed on a type of data input which will result in data output of a specific format.  Further complex analysis can then be derived by chaining relatively simple work flows to construct larger, more complex pipelines.  Presented below is an example, illustrating the work flow creation process, utilizing the work flow editor.
 
-\subsection{Example work flow}
+\section{Example work flow}
 As an example workflow, we have chosen to utilize the experimental data found in the Nature protocol ``Differential gene expression analysis of RNA-seq experiments with TopHat and Cufflinks''.  For details on where to obtain the sample data for this protocol, please reference the original paper.  In this analysis RNA-seq data from \textit{Drosophila melanogaster} will be mapped to the reference genome using tophat.  The expressed genes and transcripts will then be assembled utilizing cufflinks and cuffmerge will then merge the assemblies into a single transcript annotation.  This data may then be analyzed through the use of CummeRbund to plot differentially expressed genes.
 
-Sample data for the protocol was downloaded to the server running our Galaxy instance.  This data was then uploaded into our Galaxy instance through the Data Library management interface.  
-
-\subsection{A note about tophat}
+Sample data for the protocol was downloaded to the server running our Galaxy instance.  This data was then uploaded into our Galaxy instance through the Data Library management interface.\vspace{1em}\\
+\setlength{\fboxsep}{0.5em}
+\newsavebox\lstbox
+\begin{lrbox}{\lstbox}
+\begin{minipage}[c][][c]{.98\textwidth}
+\textbf{A note about \texttt{\footnotesize{tophat}}}\\
 In order to run the tophat portion of the protocol, we had to apply a manual patch to fix option passing to tophat2.  The details of this patch are outlined \href{https://groups.google.com/forum/#!topic/tuxedo-tools-users/vG5Rn0IgxoA}{here}.  It is possible that this patch has already been incorporated into a newer release of the tophat software, however as of the time of this writing, we were running the most recent release of tophat.
-\begin{lstlisting}
+\begin{lstlisting}[xleftmargin=2em,xrightmargin=2em,linewidth=\textwidth]
 root@chromosome:~# tophat --version
 TopHat v2.0.11
 \end{lstlisting}
+\end{minipage}
+\end{lrbox}
+\fcolorbox{black}{NavajoWhite}{\usebox\lstbox}
 
-While the procedure for performing a differential gene analysis follows closely the protocol outlined in the Nature paper, there are some additional steps that must be considered when performing the analysis within the Galaxy environment.  The first thing to take note of is that our fastq data will need to be run through the fastqsanger groomer to convert the quality scores.  Once this is done, we then may run \texttt{\footnotesize{tophat2}} to align the RNA-seq reads to the \textit{Drosophila melanogaster} reference genome.  We must also import files that we wish to use into our current history, so that they may be passed as arguments within the tool dialogs.  Therefore it is important to import both the annotation file \texttt{\footnotesize{genes.gtf}} and \texttt{\footnotesize{genome.fa}} into the history, along with the RNA-seq fastq data files to be aligned.
+While the procedure for performing a differential gene analysis closely follows the protocol outlined in the Nature paper, there are some additional steps that must be considered when performing the analysis within the Galaxy environment.  The first thing to take note of is that our fastq data will need to be run through the fastqsanger groomer to convert the quality scores.  Once this is done, we then may run \texttt{\footnotesize{tophat2}} to align the RNA-seq reads to the \textit{Drosophila melanogaster} reference genome.  We must also import files that we wish to use into our current history, so that they may be passed as arguments within the tool dialogs.  Therefore it is important to import both the annotation file \texttt{\footnotesize{genes.gtf}} and \texttt{\footnotesize{genome.fa}} into the history, along with the RNA-seq fastq data files to be aligned.
 
+\subsection{Align the RNA-seq reads to a reference genome using tophat2}
 Once the files have been imported from our Data Library, we first run the \texttt{\footnotesize{fastqsanger groomer}} on each of the RNA-seq files.  We then select the \texttt{\footnotesize{tophat2}} tool and select the appropriate options to perform our alignment.
 
 Below is a series of reference screenshot detailing the options selected for running tophat2 against the first set of paired-end reads in our RNA-seq data set.\\
@@ -483,7 +490,55 @@ Below is a series of reference screenshot detailing the options selected for run
 Once the run has completed, the history sidebar will be updated.  provided the run was successful and contained no errors during execution, you should see something similar to this in your history.\vspace{1em}\\
 \setlength\fboxsep{0pt}\fbox{\includegraphics[scale=0.5]{Screenshots/14_tophat2_output}}\vspace{1em}\\
 Clicking on the eye icon of the \texttt{\footnotesize{align summary}} will display a summary of the alignment in the main window.\vspace{1em}\\
-\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/15_tophat2_results}}\vspace{1em}
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/15_tophat2_results}}
 
-\section{Conclusions}
+\subsection{Assemble expressed genes and transcripts using cufflinks}
+Now that the reads have been aligned to the reference genome, we can make use of the \texttt{\footnotesize{cufflinks}} tool to assemble to expressed genes and transcripts.  Cufflinks will estimate the abundances and test for differential expression and regulation.\vspace{1em}\\
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/16_cufflinks}}\vspace{1em}\\
+\setlength\fboxsep{0.5em}
+\newsavebox\topbox
+\begin{lrbox}{\topbox}
+\begin{minipage}[c][][c]{.98\textwidth}
+\textbf{A note about server resources and Galaxy's queuing system}\vspace{1em}
+
+As with \texttt{\footnotesize{tophat}}, \texttt{\footnotesize{cufflinks}} is a computationally demanding program.  It will take some time for the analysis to complete.  We can observe system utilization through the linux utility \texttt{\footnotesize{top}} to ensure the system is not being overtaxed before starting multiple analyses.\vspace{1em}
+
+This screenshot shows example output during the run of our 6 \texttt{\footnotesize{cufflinks}} processes.  Galaxy has queued some of the runs until such a time that there are adequate system resources available to execute them.  This is one of the features and benefits to incorporating the Galaxy platform into our lab environment.  We now have a de facto queuing scheme for computational work within the lab!\vspace{1em}
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/17_cufflinks_system_utilization}}
+\end{minipage}
+\end{lrbox}
+\fcolorbox{black}{NavajoWhite}{\usebox\topbox}
+
+Once cufflinks has completed.  Galaxy will update the history to show the results of the finished runs.  We can examine the contents of the \texttt{\footnotesize{assembled transcripts}} by clicking on the eye icon in box.\vspace{1em}\\
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/18_cufflinks_results}}
+
+We can now run \texttt{\footnotesize{cuffmerge}} to merge the assembled transcripts into a single merged transcriptome annotation.
+
+Here we will make use of our reference sequence and annotation.  The relevant options and settings for \texttt{\footnotesize{cuffmerge}} have been noted in the screenshots below.\vspace{1em}\\
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/19_cuffmerge}}\vspace{1em}
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/20_cuffmerge}}\vspace{1em}
+
+Once \texttt{\footnotesize{cuffmerge}} has completed its execution, we now should have a fully annotated transcriptome with proper gene associations from our reference annotated genome.  We can examine the contents of the results by clicking on the eye icon of the \texttt{\footnotesize{merged transcripts}}.\vspace{1em}\\
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/21_cuffmerge_results}}\vspace{1em}
+
+\subsection{Identify differentially expressed genes and transcripts using cuffdiff}
+With the finished assembly of our transcriptome, we may utilize \texttt{\footnotesize{cuffdiff}} to identify the differentially expressed genes and transcripts from our RNA-seq data. \vspace{1em}\\
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/22_cuffdiff}}\vspace{1em}
+Here, we specify the bam files of our accepted hits from our 2 conditions, each consisting of 3 replicates.\vspace{1em}\\
+\textbf{Condition 1 with 3 replicates}\\
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/23_cuffdiff_condition_1}}\vspace{1em}
+\textbf{Condition 2 with 3 replicates}\\
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/24_cuffdiff_condition_2}}\vspace{1em}
+\textbf{The default options for cuffdiff}\\
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/25_cuffdiff_options}}\vspace{1em}
+
+\subsection{Analysis of differential expression with cummeRbund}
+CummeRbund is an R library that can be accessed either through the R interpreter directly, or by utilizing the \texttt{\footnotesize{cummerbund}} Galaxy tool from the main tool shed.  Here we will explore the distribution of expression levels and plot the two conditions utilizing a scatterplot.  We will also create a volcano plot to visualize the differentially expressed genes from the data we have obtained from our \texttt{\footnotesize{cuffdiff}} analysis.
+
+\section{Acknowledgments}
+I would like to thank Dr. Danesh Moazed, Investigator, Howard Hughes Medical Institute and Professor of Cell Biology, Harvard Medical School, for providing me the opportunity to participate in a research internship this summer.  It has been a very educational and exciting experience.  My time with the lab has provided me with a wealth of hands-on experience and knowledge.
+
+I would also like to thank Dr. Keith Connolly, Postdoctoral Fellow of the Moazed Lab, Harvard Medical School, for his mentoring and collaborative efforts during my research internship.  Dr. Connolly took the time to avail me of his current research and instruct me in various laboratory techniques.  His patience and guidance were instrumental to the success of this project.
+
+I would also like to thank all of the researchers and staff of the Moazed Lab for their assistance and valuable input as end-users and testers during the integration of Galaxy platform with the lab's computational server.
 \end{document}
