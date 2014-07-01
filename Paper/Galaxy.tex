@@ -2,14 +2,20 @@
 %%%
 \usepackage{draftwatermark} % DRAFT Watermark
 % \SetWatermarkAngle{0} default is 45.0
-\SetWatermarkScale{5}
+%\SetWatermarkScale{5}
 \usepackage{listings} % For code blocks
 \usepackage[usenames,dvipsnames,svgnames,table]{xcolor} % For colorized boxes and text
-\usepackage[colorlinks=true,urlcolor=blue]{hyperref} % To make HTML links blue
+\usepackage{hyperref} % For hyperlinks
+\hypersetup{ %
+colorlinks=true,
+urlcolor=blue,
+citecolor=DarkBlue
+}
 \usepackage{courier} % for Courier font
-\usepackage[a4paper]{geometry} % for a4paper margins
+\usepackage[a4paper,margin=1in]{geometry} % for a4paper margins
 \usepackage{graphicx} % for the inclusion of screenshots
 \usepackage{dirtree} % for directory listings
+\usepackage{wrapfig} % For wrapping text around a figure
 % Setup listings package for shell script and have comments presented in blue
 % Text will be in Lavendar boxes with black border in Courier monospaced font
 \lstset{ %
@@ -42,15 +48,20 @@
 \parskip=1em
 %%%
 
-\title{Implementation of a standalone Galaxy instance for the creation of re-usable bioinformatics processing pipelines}
-\author{Daniel J. Shea}
-\date{August 16th, 2014}
-
 \begin{document}
-\maketitle
-\pagebreak
+\begin{titlepage}
+\begin{center}
+\huge{The implementation of a standalone Galaxy instance for the creation of re-usable bioinformatics processing pipelines}\vspace{1em}\\
+\includegraphics[scale=0.5]{NEU_Logo}\vspace{2em}\\
+\LARGE{Daniel J. Shea}\\
+\large{Northeastern University -- College of Science}\\
+\large{Department of Biology -- Bioinformatics}\\
+\large{August 16th, 2014}\\
+\end{center}
+\end{titlepage}
+\tableofcontents
 \section{Introduction}
-Using yeast (Schizosaccharomyces Pombe and Saccharomyces Cervisiae) as our model organism, our research is conducted into understanding the biological processes underlying the formation, function, and epigenetic inheritance of silent chromatin domains.  Three major areas of research are related to RNAi-mediated assembly of heterochromatin, SIR-mediated assembly of silent chromatin, and the regulation of recombination within the ribosomal DNA repeats.  In order to improve the efficiency of data analysis via re-usable bioinformatics pipelines and to encourage collaboration and software re-use within the lab, we have chosen to implement a local instance of the Galaxy Project's open source web-based platform.
+Using yeast (Schizosaccharomyces Pombe and Saccharomyces Cervisiae) as our model organism, our research is conducted into understanding the biological processes underlying the formation, function, and epigenetic inheritance of silent chromatin domains.  Three major areas of research are related to RNAi-mediated assembly of heterochromatin, SIR-mediated assembly of silent chromatin, and the regulation of recombination within the ribosomal DNA repeats.  In order to improve the efficiency of data analysis via re-usable bioinformatics pipelines and to encourage collaboration and software re-use within the lab, we have chosen to implement a local instance of the Galaxy Project's open source web-based platform.\cite{Galaxy01,Galaxy02,Galaxy03}
 
 \subsection{Heterochromatin's role in the silencing of genes}
 The physical organization of DNA in eukaryotes plays a role in the levels of genetic expression by restricting the physical access of transcriptional machinery to various regions of an organism's genome.  The organization of DNA is structured around histones, octamers composed of highly conserved proteins, H2A, H2B, H3, and H4.  These proteins form heterodimers H2A/H2B and H3/H4, respectively, that then further form tetramers.  In turn, these tetramers then combine to form an octamer that is referred to as a histone.  DNA winds around these histones forming a nucleosome, with small segments of DNA, referred to as linker DNA, between them.  Structured around this basic organization of DNA are regions of tightly or loosely condensed chromatin, referred to as heterochromatin and euchromatin respectively.  Heterochromatin plays a functional role in gene silencing through the physical restriction of access to DNA by transcriptional machinery involved in transcribing DNA into messenger RNA (mRNA).
@@ -59,7 +70,7 @@ The physical organization of DNA in eukaryotes plays a role in the levels of gen
 Galaxy is an open, web-based platform for the analysis of data intensive biological research.  It provides an interactive and readily accessible web interface to many of the commonly used bioinformatics tools available today.  Computational pipelines may be constructed from within the web interface and then shared between users.  Work flows are accessible via the work flow editor, which allows for the visualization and editing of processing pipelines.  These work flows may then be abstracted for application to multiple data sets, and the work flows themselves can be shared between Galaxy users through the Galaxy web interface.  This allows researchers within our environment to compose work flows that may then be re-used or re-purposed by other collaborators in the lab with minimal effort.
 
 \section{Computational server architectural overview}
-Our computational server, \texttt{\footnotesize{chromosome.med.harvard.edu}}, serves as the platform upon which we run our Galaxy instance.  It should be noted however, that a local galaxy instance can be run on hardware with relatively modest specifications.  Depending upon the data sets and types of analyses performed, you may be constrained by the available amount RAM on your server when dealing with particularly large data sets or application of computationally intensive analysis such as attempting to perform de novo assembly.  The table below details the hardware configuration for chromosome.
+Our computational server, \texttt{\footnotesize{chromosome.med.harvard.edu}}, serves as the platform upon which we run our Galaxy instance.  It should be noted however, that a local galaxy instance can be run on hardware with relatively modest specifications.  Depending upon the data sets and types of analyses performed, you may be constrained by the available amount RAM on your server when dealing with particularly large data sets or application of computationally intensive analysis such as attempting to perform \textit{de novo} assembly.  The table below details the hardware configuration for chromosome.
 
 \subsection{Hardware configuration}
 \renewcommand{\arraystretch}{1.5}
@@ -78,7 +89,7 @@ Our computational server, \texttt{\footnotesize{chromosome.med.harvard.edu}}, se
 \end{tabular}
 
 \section{Galaxy architectural overview}
-Galaxy provides default web server and local database storage for standalone instances.  Depending on the use case, it is advised to reconfigure the instance to make use of more robust data storage and/or web server solutions.  For our particular instance, we are currently utilizing a postgresql database as our back-end storage and have chosen to utilize the proxy capability of nginx to serve website content.  By default, sqlite internal database files are utilized for the storage of data and computational work flows.  This proved problematic as our anticipated data sets were determined to quickly tax a small flat file database system such as sqlite.  Therefore, we opted to create a postgresql database wherein to store all of our data.  Details on how to accomplish this are detailed below in the database subsection.  Details on configuration of nginx as a proxy are outlined in the nginx configuration subsection.
+Galaxy provides a default web server and \texttt{\footnotesize{sqlite}} database storage for standalone instances.  Depending on the use case, it is advised to reconfigure the instance to make use of more robust data storage and/or web server solutions.  For our particular instance, we are currently utilizing a \texttt{\footnotesize{postgresql}} database as our back-end storage and have chosen to utilize the proxy capability of \texttt{\footnotesize{nginx}} to serve website content.  By default, \texttt{\footnotesize{sqlite}} internal database files are utilized for the storage of data and computational work flows.  This proved problematic as our anticipated data sets were determined to quickly tax a small flat file database system such as sqlite.  Therefore, we opted to create a \texttt{\footnotesize{postgresql}} database to serve as storage for all of our data.  Details on how to accomplish this are detailed below in the database subsection.  Details on configuration of \texttt{\footnotesize{nginx}} as a proxy are outlined in the nginx configuration subsection.
 
 User authentication and role based authentication are handled by the Galaxy server itself.  Larger installations with access to a centralized user identification management system such as LDAP or kerberos may be able to take advantage of identity caching through configuration of login caching and forwarding via apache or nginx.  Attempts to tie our local instance to existing LDAP authentication mechanisms proved to break the existing administrative functionality of the server.  These issues were raised with the development team of the Galaxy Project and it is currently being assessed as a possible feature request by Galaxy development team.
 
@@ -113,7 +124,7 @@ To configure postgresql we will need to install the postgresql package.
 sudo apt-get install postgresql
 \end{lstlisting}
 
-Further details regarding the configuration of postgresql may be obtained in your operating system's system administration documentation, or by accessing postgresql documentation available \href{http://www.postgresql.org/}{online}.  Once the database software is installed, we must create a database owned by the user id that will run the Galaxy server.  In our case the user id is \texttt{\footnotesize{galaxy}}.  \textit{(\textbf{Note:} The name of the database user created in postgresql should match whatever username is chosen.)}  Since the Galaxy platform controls its own schema within the database, we need to ensure that our galaxy user has the appropriate permissions and ownership of the the database for table creation.  This is controlled through the postgresql configuration.  Instructions on how to assign roles and permissions to a postgresql user may be referenced in the postgresql documentation.
+Further details regarding the configuration of \texttt{\footnotesize{postgresql}} may be obtained in your operating system's system administration documentation, or by accessing postgresql documentation available \href{http://www.postgresql.org/}{online}.  Once the database software is installed, we must create a database owned by the user id that will run the Galaxy server.  In our case the user id is \texttt{\footnotesize{galaxy}}.  \textit{(\textbf{Note:} The name of the database user created in postgresql should match whatever username is chosen.)}  Since the Galaxy platform controls its own schema within the database, we need to ensure that our galaxy user has the appropriate permissions and ownership of the the database for table creation.  This is controlled through the postgresql configuration.  Instructions on how to assign roles and permissions to a postgresql user may be referenced in the postgresql documentation.
 
 The nginx webserver may be installed by issuing the following command.
 
@@ -121,7 +132,7 @@ The nginx webserver may be installed by issuing the following command.
 sudo apt-get install nginx
 \end{lstlisting}
 
-For more administrative configuration details concerning nginx, please look at the \href{http://nginx.org/en/docs/}{nginx documentation}.  We will breifly outline the steps we have taken to set up nginx as a proxy for Galaxy, however this is only one possible configuration.  Further details regarding use of nginx or apache may be referenced in the \href{https://wiki.galaxyproject.org/Admin/Config/Performance/ProductionServer}{Galaxy documentation}.
+For more administrative configuration details concerning \texttt{\footnotesize{nginx}}, please look at the \href{http://nginx.org/en/docs/}{nginx documentation}.  We will briefly outline the steps we have taken to set up nginx as a proxy for Galaxy, however this is only one possible configuration.  Further details regarding use of nginx or apache may be referenced in the \href{https://wiki.galaxyproject.org/Admin/Config/Performance/ProductionServer}{Galaxy documentation}.
 
 \subsection{Integration of postgresql with Galaxy}
 Once a database has been created and we have created both the relevant galaxy user in the operating system and in the database authentication systems, we can begin to configure Galaxy for use with an external database.
@@ -180,7 +191,7 @@ tool_path = tools
 tool_dependency_dir = tool_dependencies
 \end{lstlisting}
 
-Next, we will need to configure Galaxy to take advantage of Data Libraries, a method for sharing data within the lab.  Directories in the configuration file listed here are relative paths, meaning, they are assumed to exist underneath our local \texttt{\footnotesize{galaxy-dist}} directory.  It should be noted that if you define a directory within the configuration file, you must still create the directory yourself and ensure it has appropriate permissions for access by Galaxy.  in our case the owner of the Galaxy processes is the \texttt{\footnotesize{galaxy}} user, so we created the relevant directories and ensured that the ownership was set appropriately.
+Next, we will need to configure Galaxy to take advantage of Data Libraries, a method for sharing data within the lab.  Directories in the configuration file listed here are relative paths, meaning, they are assumed to exist underneath our local \texttt{\footnotesize{galaxy-dist}} directory.  It should be noted that if you define a directory within the configuration file, you must still create the directory yourself and ensure it has appropriate permissions for access by Galaxy.  In our case the owner of the Galaxy processes is the \texttt{\footnotesize{galaxy}} user, so we created the relevant directories and ensured that the ownership was set appropriately.
 
 Below is the entry in the configuration file telling Galaxy where files will be placed in order for the Galaxy administrator to upload them into Galaxy.
 
@@ -213,7 +224,7 @@ We will now enable the functionality that allows us to paste system specific pat
 allow_library_path_paste = True
 \end{lstlisting}
 
-Before we open up our Galaxy instance to users, it is very important that we change the default \texttt{\footnotesize{id\_secret}} in the configuration file.  Failing to do so poses a security risk.  This value should be some random string, in this example I have generated a randomized string of data for use as the secret using the apg utility.  If you do not have the apg utility installed on your system, in Ubuntu, it can be added by issuing the following command:
+Before we open up our Galaxy instance to users, it is very important that we change the default \texttt{\footnotesize{id\_secret}} in the configuration file.  Failing to do so poses a security risk.  This value should be some random string.  In this example, I have generated a randomized string of data for use as the secret using the apg utility.  If you do not have the apg utility installed on your system, in Ubuntu, it can be added by issuing the following command:
 
 \begin{lstlisting}
 sudo apt-get install apg
@@ -238,7 +249,7 @@ t=Y!l_Ip^NsT!46U+>tJ##^ug($H{en<
 9K%hA=P]F^x[5M@n2tp$S(ir-akB-%yQ
 \end{lstlisting}
 
-Each line represents a randomly generated 32 character password.  Select one and place that string in the \texttt{\footnotesize{id\_secret}} entry within the \texttt{\footnotesize{universe\_wsgi.ini}} configuration file as shown below.  This key is used by Galaxy to generate internal values involved with cookies and URLs.  It must be changed or your Galaxy installation will not be secure from malicious users who could generate fake cookies using the default entry to gain access to a user's Galaxy account and thereby their data!
+Each line represents a randomly generated 32 character password.  Select one and place that string in the \texttt{\footnotesize{id\_secret}} entry within the \texttt{\footnotesize{universe\_wsgi.ini}} configuration file as shown below.  This key is used by Galaxy to generate internal values involved with cookies and URLs.  It must be changed, or your Galaxy installation will not be secure from malicious users.   A malicious user wishing to gain entry could generate fake cookies using the default entry to gain access to a valid user's Galaxy account, and thereby access their data.
 
 \begin{lstlisting}
 # -- Users and Security
@@ -278,7 +289,7 @@ Here we disable anonymous login, as only registered users will be given access t
 require_login = True
 \end{lstlisting}
 
-Currently, we have left this as the default, allowing anyone to register an account with our instance.  Since our instance is behind a firewall an only accessible by individuals with access to the Private HMS network, we have decided to let our users create their own accounts and specify the email they would like to use.  Depending upon your network configuration and whether or not your Galaxy instance is accessible over the internet, you may wish to change this value to \texttt{False}.
+Currently, we have left this as the default, allowing anyone to register an account with our instance.  Since our instance is behind a firewall, and only accessible by individuals with access to the Private HMS network, we have decided to let our users create their own accounts and specify the email they would like to use.  Depending upon your network configuration and whether or not your Galaxy instance is accessible over the internet, you may wish to change this value to \texttt{False}.
 \begin{lstlisting}
 # Allow unregistered users to create new accounts (otherwise, they will have to
 # be created by an admin).
@@ -315,7 +326,7 @@ Within the \texttt{\footnotesize{http}} clause, the following settings will allo
 \end{lstlisting}
 
 These filters must also be enabled in the Galaxy configuration file \texttt{\footnotesize{universe\_wsgi.ini}} as well, as they are disabled by default.  Here, the proxy filters are defined near the top of the configuration file and we have enabled them.
-
+\pagebreak
 \begin{lstlisting}
 # ---- Filters --------------------------------------------------------------
 
@@ -384,7 +395,7 @@ Since we are only running Galaxy on this server's web server, our configuration 
         }
 \end{lstlisting}
 
-Once you have finished configuration of your Galaxy instance you can again bring it up and test that the configuration settings are working as intended.  You can verify that the Galaxy server is able to access your postgresql database and a new schema should appear within the database now that Galaxy is managing its internal storage via the postgresql database.  There is an important log associated with startup that should be mentioned at this point, as it will assist in troubleshooting any potential configuration issues and will allow you to determine when Galaxy has successfully started.
+Once you have finished configuration of your Galaxy instance you can start Galaxy and test that the configuration settings are working as intended.  You can verify that the Galaxy server is able to access your postgresql database and a new schema should appear within the database now that Galaxy is managing its internal storage via the postgresql database.  There is an important log associated with startup that should be mentioned at this point, as it will assist in troubleshooting any potential configuration issues and will allow you to determine when Galaxy has successfully started.  Details regarding the \texttt{\footnotesize{paster.log}} logfile are discussed in the following section.
 
 \section{Galaxy system service configuration}
 Since Galaxy is running as a system service, we will make several additional operating system level modifications to our server.  The following subsections briefly outline such configuraton changes with respect to Ubuntu 12.04LTS.  Postgresql and nginx should already be enabled as system services that start at boot time as part of their installation via the package manager, therefore we will only cover the necessary steps required to ensure that Galaxy is also enabled and brought up as a system service.
@@ -409,8 +420,8 @@ This tells the logrotate d$\ae$mon to rotate paster.log weekly, keeping the last
 
 \subsection{Automating start up and shut down of the Galaxy service}
 Since Galaxy will be treated as a system service on our server, we have opted to create a simple start up and shut down script on our Ubuntu server utilizing the Ubuntu upstart system.  this ensures that when our system is brought down for maintenance, or re-started, that our Galaxy instance will be brought down cleanly during the shut down process and brought back up during the system's boot sequence.  Below are the contents of our script for reference.
-
-\lstinputlisting{galaxy.txt}
+\pagebreak
+\lstinputlisting[title=/etc/init.d/galaxy]{galaxy.txt}
 
 The LSB header information contained in this script is specific to our Ubuntu system's startup scripts.  It allows the \texttt{\footnotesize{update-rc.d}} script to configure the startup and shutdown of Galaxy for the appropriate runlevels during system initialization and shut down.
 
@@ -419,7 +430,7 @@ Once Galaxy has been successfully installed and brought online, we can then crea
 At this point the Galaxy instance should be running according to the previously outlined configuration and accessible via a web browser.
 By default, Galaxy makes use of port \texttt{\footnotesize{8080}}. Therefore, in our case, to access Galaxy we simply direct our browser to the following URL \href{http://chromosome.med.harvard.edu:8080}{http://chromosome.med.harvard.edu:8080}
 
-From here, you will want to create the administrative account that matches the email address you specified in your configuration in the \texttt{\footnotesize{admin\_users}} section of \texttt{\footnotesize{universe\_wsgi.ini}}.\vspace{1em}
+From here, you will want to create the administrative account that matches the email address you specified in your configuration in the \texttt{\footnotesize{admin\_users}} section of \texttt{\footnotesize{universe\_wsgi.ini}}.\vspace{1em}\\
 \setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/00_login}}\vspace{1em}
 
 From here you be greeted with a registration page that will allow you to create your account.\vspace{1em}
@@ -431,7 +442,9 @@ Once you have successfully logged in, you will be greeted with the standard Gala
 \section{Setting up a Data Library in Galaxy}
 Galaxy allows for the configuration of data libraries in order to share data files.  The benefit of a data library is that access control may be permissioned on a user or group basis, if necessary.  Furthermore, data stored in a data library is only stored once within the database.  When users import data from a data library, a pointer to the original data is passed.  This reduces disk utilization on the server and circumvents duplication of large data sets shared among multiple users.
 We chose to implement a Data Library for the shared publication data that has been generated by researcher's within our lab.  The benefits of this are several-fold.  We have a central repository within the laboratory for all of our sequencing data.  New lab members can easily examine work that has been done to date and thereby reduce the time required for them to acclimate themselves to the work flow within the lab.  Researcher's unfamiliar or just starting out utilizing bioinformatics tools are presented with a relatively intuitive GUI interface that can assist them in performing analyses on our lab's server.  The centralized repository of sequence data maintains annotation of the relevant NCBI GEO and SRA accession identifiers.  In order to import the SRA data in the proper file formats applicable to Galaxy, the \texttt{\footnotesize{sra-toolkit}} was used to convert SRA formatted data to SAM file format and then uploaded to Galaxy via the Data Library management interface.
-The directory hierarchy for SRA data is as follows:\vspace{1em}
+\pagebreak
+
+\noindent The directory hierarchy for SRA data is as follows:\vspace{1em}
 \dirtree{%
 .1 MoazedLabData.
 .2 Processed.
@@ -453,13 +466,8 @@ There are numerous bioinformatics software tools available for use on Linux-base
 
 For the purposes of our laboratory environment and research regarding our model ogranism, \textit{Schizosaccaromyces pombe}, there is no available UCSC database entry regarding our model organism.  Therefore, support for adding our model organism's reference genome into these built in indexes is not available.  As such, a reference genome in \texttt{\footnotesize{fasta}} format was installed into a shared Data Library for use in our computational work flows.  
 
-\section{Galaxy work flow creation}
-Work flows are created either by extracting a work flow from an existing analysis, or by building a work flow within the work flow editor.  Work flows allow for the creation of a generalized pipeline for the processing of biological data using the many tools installed in the Galaxy tool shed.  This approach utilizes a graphical flowchart detailing the inputs and outputs derived from each tool.  Individual tool's outputs may be connected to the inputs of subsequent tools, forming a data pipeline.  These work flows may then be saved and shared with other users of the Galaxy platform.
-
-Work flows are modeled after data flow diagrams found in software engineering, whereby an input data set is transformed through a series of applied functions, resulting in output derived from the series of transformations applied to the data in the model.  This allows for an abstract representation of the analysis to be performed on a type of data input which will result in data output of a specific format.  Further complex analysis can then be derived by chaining relatively simple work flows to construct larger, more complex pipelines.  Presented below is an example, illustrating the work flow creation process, utilizing the work flow editor.
-
-\section{Example work flow}
-As an example workflow, we have chosen to utilize the experimental data found in the Nature protocol ``Differential gene expression analysis of RNA-seq experiments with TopHat and Cufflinks''.  For details on where to obtain the sample data for this protocol, please reference the original paper.  In this analysis RNA-seq data from \textit{Drosophila melanogaster} will be mapped to the reference genome using tophat.  The expressed genes and transcripts will then be assembled utilizing cufflinks and cuffmerge will then merge the assemblies into a single transcript annotation.  This data may then be analyzed through the use of CummeRbund to plot differentially expressed genes.
+\section{Performing a differential gene expression analysis using Galaxy}
+As an example analysis, we have chosen to utilize the experimental data found in the Nature protocol ``Differential gene expression analysis of RNA-seq experiments with TopHat and Cufflinks''.\cite{protocol}  For details on where to obtain the sample data for this protocol, please refer to the original paper.  In this analysis, RNA-seq data from \textit{Drosophila melanogaster} will be mapped to the reference genome using \texttt{\footnotesize{tophat}}.\cite{tophat} The expressed genes and transcripts will then be assembled utilizing \texttt{\footnotesize{cufflinks}}\cite{cufflinks}, after which \texttt{\footnotesize{cuffmerge}} will merge the assemblies into a single transcript annotation.  This assembled transcriptome may then be analyzed by \texttt{\footnotesize{cuffdiff}} to obtain FPKM-normalized expression levels.  Data generated by a \texttt{\footnotesize{cuffdiff}} run is then passed to  the \texttt{\footnotesize{R}}\cite{R} library \texttt{\footnotesize{cummeRbund}}\cite{cummeRbund} for visualization and generation of publication-quality plots.
 
 Sample data for the protocol was downloaded to the server running our Galaxy instance.  This data was then uploaded into our Galaxy instance through the Data Library management interface.\vspace{1em}\\
 \setlength{\fboxsep}{0.5em}
@@ -476,7 +484,7 @@ TopHat v2.0.11
 \end{lrbox}
 \fcolorbox{black}{NavajoWhite}{\usebox\lstbox}
 
-While the procedure for performing a differential gene analysis closely follows the protocol outlined in the Nature paper, there are some additional steps that must be considered when performing the analysis within the Galaxy environment.  The first thing to take note of is that our fastq data will need to be run through the fastqsanger groomer to convert the quality scores.  Once this is done, we then may run \texttt{\footnotesize{tophat2}} to align the RNA-seq reads to the \textit{Drosophila melanogaster} reference genome.  We must also import files that we wish to use into our current history, so that they may be passed as arguments within the tool dialogs.  Therefore it is important to import both the annotation file \texttt{\footnotesize{genes.gtf}} and \texttt{\footnotesize{genome.fa}} into the history, along with the RNA-seq fastq data files to be aligned.
+While the procedure for performing a differential gene analysis closely follows the protocol outlined in the Nature paper, there are some additional steps that must be considered when performing the analysis within the Galaxy environment.  The first thing to take note of is that our fastq data will need to be run through the fastqsanger groomer to convert the quality scores.  Once this is done, we then may run \texttt{\footnotesize{tophat2}}\cite{tophat2} to align the RNA-seq reads to the \textit{Drosophila melanogaster} reference genome.  We must also import files that we wish to use into our current history, so that they may be passed as arguments within the tool dialogs.  Therefore, it is important to import both the annotation file \texttt{\footnotesize{genes.gtf}} and \texttt{\footnotesize{genome.fa}} into the history, along with the RNA-seq fastq data files to be aligned.
 
 \subsection{Align the RNA-seq reads to a reference genome using tophat2}
 Once the files have been imported from our Data Library, we first run the \texttt{\footnotesize{fastqsanger groomer}} on each of the RNA-seq files.  We then select the \texttt{\footnotesize{tophat2}} tool and select the appropriate options to perform our alignment.
@@ -526,17 +534,21 @@ With the finished assembly of our transcriptome, we may utilize \texttt{\footnot
 \textbf{Differential expression using \texttt{\footnotesize{cuffdiff}}}\vspace{1em}\\
 \setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/22_cuffdiff}}\vspace{1em}
 Here, we specify the bam files of our accepted hits from our 2 conditions, each consisting of 3 replicates.\vspace{1em}\\
-\textbf{Condition 1 with 3 replicates}\\
+
+\pagebreak
+\noindent\textbf{Condition 1 with 3 replicates}\\
 \setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/23_cuffdiff_condition_1}}\vspace{1em}
 \textbf{Condition 2 with 3 replicates}\\
 \setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/24_cuffdiff_condition_2}}\vspace{1em}
-\textbf{The default options for cuffdiff}\\
+
+\pagebreak
+\noindent\textbf{The default options for cuffdiff}\\
 \setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/25_cuffdiff_options}}\vspace{1em}
 
 \subsection{Analysis of differential expression with cummeRbund}
 CummeRbund is an R library that can be accessed through the R interpreter.  Here we will explore the distribution of expression levels and plot the two conditions utilizing a scatterplot.  We will also create a volcano plot to visualize the differentially expressed genes from the data we have obtained from our \texttt{\footnotesize{cuffdiff}} analysis.
 
-One important thing to note is that the \texttt{\footnotesize{cuffdiff}} files in our Galaxy history will be named using a different naming convention than what \texttt{\footnotesize{cummeRbund}} is expecting.  Therefore, when we export our \texttt{\footnotesize{cuffdiff}} files, they will need to be renamed to the appropriate file-names that \texttt{\footnotesize{cummeRbund}} attempts to load in order to generate our plots.  I have written a \texttt{\footnotesize{python}} script to handle the renaming of the data files to the expected format using the following translation table between the two naming conventions.\vspace{1em}\\
+One important thing to note is that the \texttt{\footnotesize{cuffdiff}} files in our Galaxy history will be named using a different naming convention than what \texttt{\footnotesize{cummeRbund}} is expecting.  Therefore, when we export our \texttt{\footnotesize{cuffdiff}} files, they will need to be renamed to the appropriate file-names that \texttt{\footnotesize{cummeRbund}} attempts to load in order to generate our plots.  I have written a \texttt{\footnotesize{python}}\cite{python} script to handle the renaming of the data files to the expected format using the following translation table between the two naming conventions.\vspace{1em}\\
 \renewcommand{\arraystretch}{1.5}
 \begin{tabular}{|l|l|}
 \hline
@@ -568,8 +580,165 @@ One important thing to note is that the \texttt{\footnotesize{cuffdiff}} files i
 \hline
 \end{tabular}
 
-Listed below are the contents of the renaming script for reference.\\
-\lstinputlisting[language=python]{Scripts/Galaxy2Cummerbund.py}
+\noindent Listed below are the contents of the renaming script for reference.\\
+\lstinputlisting[language=python,title=Galaxy2Cummerbund.py]{Scripts/Galaxy2Cummerbund.py}
+
+Once the files have been downloaded from our Galaxy history and renamed via the \texttt{\footnotesize{Galaxy2Cummerbund.py}} script, we can use \texttt{\footnotesize{R}} to analyze the \texttt{\footnotesize{cuffdiff}} data and plot differential expression of our two sample conditions.  \texttt{\footnotesize{R}} may be invoked from the linux command line, below is an example interactive session detailing the generation of the scatterplot followed by the example output created.
+
+\noindent\textbf{Invocation of \texttt{\footnotesize{R}} from the linux command line.}
+\begin{lstlisting}
+dshea@chromosome:~$ R
+
+R version 3.1.0 (2014-04-10) -- "Spring Dance"
+Copyright (C) 2014 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+\end{lstlisting}
+
+\pagebreak
+\noindent\textbf{Loading the \texttt{\footnotesize{cummeRbund}} library.}\\
+\begin{lstlisting}[language=R]
+> library(cummeRbund)
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following object is masked from ‘package:stats’:
+
+    xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, as.vector, cbind, colnames,
+    do.call, duplicated, eval, evalq, Filter, Find, get, intersect,
+    is.unsorted, lapply, Map, mapply, match, mget, order, paste, pmax,
+    pmax.int, pmin, pmin.int, Position, rank, rbind, Reduce, rep.int,
+    rownames, sapply, setdiff, sort, table, tapply, union, unique,
+    unlist
+
+Loading required package: RSQLite
+Loading required package: DBI
+Loading required package: ggplot2
+Loading required package: reshape2
+Loading required package: fastcluster
+
+Attaching package: ‘fastcluster’
+
+The following object is masked from ‘package:stats’:
+
+    hclust
+
+Loading required package: rtracklayer
+Loading required package: GenomicRanges
+Loading required package: IRanges
+Loading required package: GenomeInfoDb
+Loading required package: Gviz
+Loading required package: grid
+
+Attaching package: ‘cummeRbund’
+
+The following object is masked from ‘package:GenomicRanges’:
+
+    promoters
+
+The following object is masked from ‘package:IRanges’:
+
+    promoters
+
+> 
+\end{lstlisting}
+
+\pagebreak
+\noindent\textbf{Loading the \texttt{\footnotesize{cuffdiff}} data and plotting a distribution expression levels, scatterplot and volcano for genes.}\\
+\begin{lstlisting}[language=R]
+> cuff_data <- readCufflinks('Data')
+> cuff_data
+CuffSet instance with:
+         2 samples
+         14411 genes
+         25118 isoforms
+         17360 TSS
+         18175 CDS
+         14411 promoters
+         17360 splicing
+         0 relCDS
+> png(filename='~/26_distribution_of_expression_levels.png',width=480,height=480)
+> csDensity(genes(cuff_data))
+Warning messages:
+1: Removed 4109 rows containing non-finite values (stat_density). 
+2: Removed 4118 rows containing non-finite values (stat_density). 
+> dev.off()
+null device 
+          1 
+> png(filename='~/27_scatterplot.png',width=480,height=480)
+> csScatter(genes(cuff_data), 'C1', 'C2')
+> dev.off()
+null device 
+          1 
+> png(filename='~/28_volcano.png',width=480,height=480)
+> csVolcano(genes(cuff_data), 'C1', 'C2')
+> dev.off()
+null device 
+          1 
+\end{lstlisting}
+\textbf{Plots generated from the above \texttt{\footnotesize{cummeRbund}} analysis.}\vspace{1em}\\
+\begin{tabular}{|c|c|c|}
+\textbf{\footnotesize{Distribution of expression levels}} & \textbf{\footnotesize{Genes scatterplot}} & \textbf{\footnotesize{Genes volcano plot}}\\
+\setlength\fboxsep{0pt}\fbox{\includegraphics[scale=.25]{Screenshots/26_distribution_of_expression_levels}}&
+\setlength\fboxsep{0pt}\fbox{\includegraphics[scale=.25]{Screenshots/27_scatterplot}}&
+\setlength\fboxsep{0pt}\fbox{\includegraphics[scale=.25]{Screenshots/28_volcano}}\\
+\end{tabular}
+
+\section{Galaxy work flow creation}
+Work flows are created either by extracting a work flow from an existing analysis, or by building a work flow within the work flow editor.  Work flows allow for the creation of a generalized pipeline for the processing of biological data using the many tools installed in the Galaxy tool shed.  This approach utilizes a graphical flowchart detailing the inputs and outputs derived from each tool.  Individual tool's outputs may be connected to the inputs of subsequent tools, forming a data pipeline.  These work flows may then be saved and shared with other users of the Galaxy platform.
+
+Work flows are modeled after data flow diagrams found in software engineering, whereby an input data set is transformed through a series of applied functions, resulting in output derived from the series of transformations applied to the data in the model.  This allows for an abstract representation of the analysis to be performed on a type of data input which will result in data output of a specific format.  Further complex analysis can then be derived by chaining relatively simple work flows to construct larger, more complex pipelines.  Presented below is an example, illustrating the work flow creation process, utilizing the work flow editor and the differential expression analysis outlined above.
+
+\subsection{Work flow extraction}
+We begin by extracting the work flow from our existing analysis contained within our working history.  This gives us a work flow modeled after the steps we have taken to perform the differential gene expression analysis detailed earlier.  Once the work flow has been extracted we will be presented with the work flow editor environment, along with a graphical representation of the work flow itself.  Each box denotes a tool utilized from our history.  Tools will have inputs and outputs on the left and right side of each box respectively, with arrows denoting the flow of data through the pipeline.  Below is the graphical representation of the work flow extracted from our analysis.
+
+\noindent\textbf{Extracting a work flow}\vspace{1em}\\
+\setlength\fboxsep{0pt}\fbox{\includegraphics[scale=.25]{Screenshots/29_extract_workflow}}
+
+\noindent\textbf{The extracted work flow}\vspace{1em}\\
+\setlength\fboxsep{0pt}\fbox{\includegraphics[width=\textwidth]{Screenshots/30_workflow}}
+
+Selecting an individual box will highlight that tool and allow you to make modifications to any parameters associated with the tool.  Inputs and outputs can between individual tools can be created by selecting the nodes associated with each and drawing a line between the two tools.  In the case of our extracted work flow, the arrows are already present, as they were extracted from the history along with the tools we used to perform the analysis.
+
+\subsection{Work flow re-use}
+Once we have created a work flow from a working analysis, we now have a re-usable analytical pipeline that can be executed against arbitrary input sets.  These work flows may also then be published and/or shared with other users of the Galaxy platform from the main \texttt{\footnotesize{Workflow}} menu by selecting the dropdown task list for a work flow.  An existing work flow may also be copied and then the copy modified, therefore making it a relatively simple task to experiment with an existing analysis method by modifying a working copy.
+
+\subsection{Execution of a work flow}
+Once we have a work flow that we are satisfied with, we can utilize it to perform analysis on other data sets.  This is done by importing the required input data sets to a new working history within the \texttt{\footnotesize{Analyze Data}} interface of Galaxy and then selecting the work flow we wish to execute from the \texttt{\footnotesize{Workflow}} section.  We are then returned to the \texttt{\footnotesize{Analyze Data}} interface, where we will be prompted to select the inputs based on the imported data files contained in our current working history.  We can then execute the work flow by selecting the \texttt{\footnotesize{Run workflow}} button at the bottom of the interface.
+
+\section{Conclusions and caveats on use of the Galaxy platform}
+The Galaxy platform provides biologists with minimal command line experience to utilize many of the available bioinformatics tools to perform data analysis in a user friendly graphical interface environment.  The shallower learning curve and relative ease with which researchers can access biological data and share their data and analyses with others is beneficial for collaborative efforts within the lab environment.  It must be noted however that the trade-off for this ease of use is that a lab interested in leveraging a local Galaxy instance must have at least one individual with necessary system administration skills and knowledge of database, webserver and OS configuration and administration.  In addition to installing Galaxy, all the necessary tools that will be required for analysis must also be properly installed and configured.  There are version dependencies between Galaxy and the locally installed resources as well that must be considered.  Some tools within the tool shed will have specific requirements for a version of a tool, as the python wrappers rely on a consistent interface by which to pass the arguments and options required to invoke the tool properly and in the expected syntax.
+
+Adoption of Galaxy within a lab will require adequate training of staff in how to interact with, and make use of the system once it is available.  As with any software suite, this will require selling the derived benefits to researchers in exchange for their time invested learning how to interact and make use of the new system.  Therefore, it is incumbent upon those tasked with implementation and integration of such tool-kits to provide both training and working examples of work flows that can be utilized right away by researchers within the institution if there is any chance of adoption.
+
+Before investing time and resources into a local deployment, it is advised that those interested in implementing a local instance first attempt work on one of the many public Galaxy servers available to see if the tool is a benefit to their analytical work flow.  Those researchers and laboratories interested in Galaxy may access one of the many public servers available by pointing their web browser to the \href{https://galaxyproject.org/}{Galaxy Project website}.  
 
 \section{Acknowledgments}
 I would like to express my gratitude to Dr. Danesh Moazed, Investigator, Howard Hughes Medical Institute and Professor of Cell Biology, Harvard Medical School, for providing me the opportunity to participate in a research internship this summer.  It has been a very educational and exciting experience.  My time with the lab has provided me with a wealth of hands-on experience and knowledge.
@@ -577,4 +746,52 @@ I would like to express my gratitude to Dr. Danesh Moazed, Investigator, Howard 
 I would also like to personally thank Dr. Keith Connolly, Postdoctoral Fellow of the Moazed Lab, Harvard Medical School, for his mentoring and collaborative efforts during my research internship.  Dr. Connolly took the time to avail me of his current research and instruct me in various laboratory techniques.  His patience and guidance were instrumental to the success of this project.
 
 And lastly, I would like to acknowledge all of the researchers and staff of the Moazed Lab for their assistance and valuable input as end-users and testers during the integration of Galaxy platform with the lab's computational server.
+
+\bibliographystyle{acm}
+\begin{thebibliography}{10}
+
+\bibitem{Galaxy01} Goecks, J, Nekrutenko, A, Taylor, J and The Galaxy Team. 
+{\em Galaxy: a comprehensive approach for supporting accessible, reproducible, and transparent computational research in the life sciences.}
+Genome Biol. 2010 Aug 25;11(8):R86.
+
+\bibitem{Galaxy02} Blankenberg D, Von Kuster G, Coraor N, Ananda G, Lazarus R, Mangan M, Nekrutenko A, Taylor J. 
+{\em Galaxy: a web-based genome analysis tool for experimentalists.}
+Current Protocols in Molecular Biology. 2010 Jan; Chapter 19:Unit 19.10.1-21.
+
+\bibitem{Galaxy03} Giardine B, Riemer C, Hardison RC, Burhans R, Elnitski L, Shah P, Zhang Y, Blankenberg D, Albert I, Taylor J, Miller W, Kent WJ, Nekrutenko A.
+{\em Galaxy: a platform for interactive large-scale genome analysis.}
+Genome Research. 2005 Oct; 15(10):1451-5.
+
+\bibitem{protocol} Trapnell C, Roberts A, Goff L, Pertea G, Kim D, Kelley DR, Pimentel H, Salzberg SL, Rinn JL, Pachter L. 
+{\em Differential gene and transcript expression analysis of RNA-seq experiments with TopHat and Cufflinks}
+Nat Protoc. 2012 Mar 1;7(3):562-78. doi: 10.1038/nprot.2012.016.
+
+\bibitem{tophat} Trapnell C, Pachter L, Salzberg SL. 
+{\em TopHat: discovering splice junctions with RNA-Seq.}
+Bioinformatics doi:10.1093/bioinformatics/btp120
+
+\bibitem{tophat2} Kim D, Pertea G, Trapnell C, Pimentel H, Kelley R, Salzberg SL.
+{\em TopHat2: accurate alignment of transcriptomes in the presence of insertions, deletions and gene fusions.}
+Genome Biology 2013, 14:R36
+
+\bibitem{cufflinks} Trapnell C, Hendrickson D,Sauvageau S, Goff L, Rinn JL, Pachter L 
+{\em Differential analysis of gene regulation at transcript resolution with RNA-seq}
+Nature Biotechnology doi:10.1038/nbt.2450
+
+\bibitem{python} G. van Rossum and F.L. Drake (eds)
+{\em Python Reference Manual}
+PythonLabs, Virginia, USA, 2001. 
+\href{http://www.python.org}{http://www.python.org}
+
+\bibitem{R} R Core Team (2014).
+{\em R: A language and environment for statistical computing.}
+R Foundation for Statistical Computing, Vienna, Austria.
+\href{http://www.R-project.org/}{http://www.R-project.org/}
+
+\bibitem{cummeRbund} L. Goff, C. Trapnell and D. Kelley (2012).
+{\em cummeRbund: Analysis, exploration, manipulation, and visualization of Cufflinks high-throughput sequencing data.}
+R package version 2.6.1.
+
+\end{thebibliography}
+
 \end{document}

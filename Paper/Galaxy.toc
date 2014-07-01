@@ -1,0 +1,26 @@
+\contentsline {section}{\numberline {1}Introduction}{2}{section.1}
+\contentsline {subsection}{\numberline {1.1}Heterochromatin's role in the silencing of genes}{2}{subsection.1.1}
+\contentsline {subsection}{\numberline {1.2}Benefits derived from the implementation of Galaxy within the lab}{2}{subsection.1.2}
+\contentsline {section}{\numberline {2}Computational server architectural overview}{2}{section.2}
+\contentsline {subsection}{\numberline {2.1}Hardware configuration}{3}{subsection.2.1}
+\contentsline {section}{\numberline {3}Galaxy architectural overview}{3}{section.3}
+\contentsline {subsection}{\numberline {3.1}Galaxy, postgresql and nginx installation}{3}{subsection.3.1}
+\contentsline {subsection}{\numberline {3.2}Integration of postgresql with Galaxy}{4}{subsection.3.2}
+\contentsline {subsection}{\numberline {3.3}Integration of nginx for use as a proxy with Galaxy}{7}{subsection.3.3}
+\contentsline {section}{\numberline {4}Galaxy system service configuration}{9}{section.4}
+\contentsline {subsection}{\numberline {4.1}Galaxy log file rotation using logrotate}{9}{subsection.4.1}
+\contentsline {subsection}{\numberline {4.2}Automating start up and shut down of the Galaxy service}{9}{subsection.4.2}
+\contentsline {section}{\numberline {5}Account creation and initial login}{11}{section.5}
+\contentsline {section}{\numberline {6}Setting up a Data Library in Galaxy}{13}{section.6}
+\contentsline {section}{\numberline {7}Bioinformatics tools and integration with the Galaxy tool shed}{14}{section.7}
+\contentsline {section}{\numberline {8}Performing a differential gene expression analysis using Galaxy}{15}{section.8}
+\contentsline {subsection}{\numberline {8.1}Align the RNA-seq reads to a reference genome using tophat2}{15}{subsection.8.1}
+\contentsline {subsection}{\numberline {8.2}Assemble expressed genes and transcripts using cufflinks}{18}{subsection.8.2}
+\contentsline {subsection}{\numberline {8.3}Identify differentially expressed genes and transcripts using cuffdiff}{21}{subsection.8.3}
+\contentsline {subsection}{\numberline {8.4}Analysis of differential expression with cummeRbund}{23}{subsection.8.4}
+\contentsline {section}{\numberline {9}Galaxy work flow creation}{27}{section.9}
+\contentsline {subsection}{\numberline {9.1}Work flow extraction}{28}{subsection.9.1}
+\contentsline {subsection}{\numberline {9.2}Work flow re-use}{29}{subsection.9.2}
+\contentsline {subsection}{\numberline {9.3}Execution of a work flow}{29}{subsection.9.3}
+\contentsline {section}{\numberline {10}Conclusions and caveats on use of the Galaxy platform}{29}{section.10}
+\contentsline {section}{\numberline {11}Acknowledgments}{29}{section.11}
