@@ -13,6 +13,37 @@ Description:
     Offsets for features that come after the insertion are updated to reflect
     their new coordinates in the updated reference genome.
 
+    GTF File Format Fields
+    
+    Fields
+
+    Fields must be tab-separated. Also, all but the final field in each feature
+    line must contain a value; "empty" columns should be denoted with a '.'
+
+    seqname   - name of the chromosome or scaffold; chromosome names can be given
+                with or without the 'chr' prefix.
+    source    - name of the program that generated this feature, or the data
+                source (database or project name)
+    feature   - feature type name, e.g. Gene, Variation, Similarity
+    start     - Start position of the feature, with sequence numbering starting at 1.
+    end       - End position of the feature, with sequence numbering starting at 1.
+    score     - A floating point value.
+    strand    - defined as + (forward) or - (reverse).
+    frame     - One of '0', '1' or '2'. '0' indicates that the first base of the
+                feature is the first base of a codon, '1' that the second base is
+                the first base of a codon, and so on..
+    attribute - A semicolon-separated list of tag-value pairs, providing
+                additional information about each feature.
+                
+    Sample GFF output from Ensembl export:
+
+X	Ensembl	Repeat	2419108	2419128	42	.	.	hid=trf; hstart=1; hend=21
+X	Ensembl	Repeat	2419108	2419410	2502	-	.	hid=AluSx; hstart=1; hend=303
+X	Ensembl	Repeat	2419108	2419128	0	.	.	hid=dust; hstart=2419108; hend=2419128
+X	Ensembl	Pred.trans.	2416676	2418760	450.19	-	2	genscan=GENSCAN00000019335
+X	Ensembl	Variation	2413425	2413425	.	+	.	
+X	Ensembl	Variation	2413805	2413805	.	+	.
+
 '''
 
 import argparse
@@ -22,13 +53,17 @@ from Bio import Seq
 from BCBio import GFF
 import sys
 
-def parse_ref(ref_file):
-    pass
+def parse_file(gfffile):
+    try:
+        gff = GFF.parse(gfffile)
+        seqs = list()
+        for seq in gff:
+            seqs.append(seqs)
+        return seqs
+    except Exception as e:
+        return None
 
-def parse_insert(insert_file):
-    pass
-
-def compute_new_offsets(parsed_ref_file, parsed_insert_file):
+def compute_new_offsets(ref_seqs, insert_seqs):
     pass
 
 def main():
@@ -55,14 +90,14 @@ def main():
     output_file = args.o
     
     # Parse the reference file
-    parsed_ref_file = parse_ref(ref_file)
+    ref_seqs = parse_file(ref_file)
     
     # Parse the insert file
-    parsed_insert_file = parse_insert(insert_file)
+    insert_seqs = parse_file(insert_file)
     
     # Compute the new offsets and then write the results of the new file to the
     # output file
-    compute_new_offsets(parsed_ref_file, parsed_insert_file)
+    compute_new_offsets(ref_seqs, insert_seqs)
     
     # Exit cleanly
     return(0)
