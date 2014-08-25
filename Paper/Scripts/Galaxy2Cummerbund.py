@@ -55,7 +55,7 @@ def rename_files(directory):
                 shutil.copy2(src, dst)
 
 def main():
-    parser = argparse.ArgumentParser(description='Covert Galaxy cuffdiff files to the expected names for cummeRbund analysis.')
+    parser = argparse.ArgumentParser(description='Convert Galaxy cuffdiff files to the expected names for cummeRbund analysis.')
     parser.add_argument('directory',help='directory where Galaxy files are located')
     args = parser.parse_args()
     print 'directory is {}'.format(args.directory)
